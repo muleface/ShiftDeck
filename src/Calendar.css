@@ -38,7 +38,6 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.125rem;
   margin: 0 -0.75rem; /* Negative margin to allow for overlap */
   padding: 0 0.75rem; /* Padding to prevent cut-off of popped out cards */
 }
@@ -52,12 +51,11 @@
   transition: all 0.2s;
   cursor: pointer;
   z-index: 1;
-  margin: 0 0.125rem;
 }
 
 .day-card:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  transform: translateY(-0.25rem) scale(1.05);
+  transform: translateY(2rem) translateX(1.5rem) scale(1.5); /*use the translates to control the expansion direction */
   z-index: 10;
 }
 
