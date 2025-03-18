@@ -4,6 +4,7 @@ import Calendar from './Calendar.tsx'
 import Header from './Header.tsx'
 import Footer from './Footer.tsx'
 import LoggedIn from './LoggedIn.tsx'
+import InternList from './InternList.tsx'
 
 
 function App() {
@@ -13,9 +14,10 @@ function App() {
   };
   return ( 
     <>
-      <Header/>
-      <Calendar/>
-      <Footer/>
+      <Header />
+      <Calendar />
+      <InternList />
+      <Footer />
     </>
   )
 }
