@@ -17,6 +17,8 @@ const Calendar: React.FC = () => {
     'Sarah Davis',
     'Robert Wilson'
   ]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   
   // Generate calendar days for current month
   useEffect(() => {
@@ -98,6 +100,11 @@ const Calendar: React.FC = () => {
     return days[index % 7];
   };
 
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+  
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
@@ -114,20 +121,29 @@ const Calendar: React.FC = () => {
         >
           Next
         </button>
+        {/*<button 
+          className="darkmode"
+          onClick={toggleTheme}
+        >
+          dark mode
+        </button>*/}
       </div>
       
       <div className="calendar-grid">
         {calendar.map((day, index) => (
           <div 
             key={index}
-            className={`day-card ${day?.isCurrentMonth ? 'current-month' : 'other-month'}`}
+            className={`day-card ${day?.isCurrentMonth ? 'current-month' : 'other-month'} `}
           >
             {day && (
               <>
                 <div className="day-content">
-                  <div className="day-header-combined">
+                <div className={`day-header-combined ${isDarkMode? 'darkmode':''}
+                ${getDayOfWeek(index) === 'Fri' || getDayOfWeek(index) === 'Sat' ?
+                  day?.assignedPerson ? 'weekend-assigned-header': "weekend-header":
+                  day?.assignedPerson ? "assigned-header" : ''}`}>
                     {day.date} - {getDayOfWeek(index)}
-                  </div>
+                </div>
                   
                   <div className="assignment-container">
                     {day.assignedPerson && (
