@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'
-import Calendar from './Calendar.tsx'
-import Header from './Header.tsx'
-import Footer from './Footer.tsx'
 import LoggedIn from './LoggedIn.tsx'
 
 
@@ -13,9 +10,8 @@ function App() {
   };
   return ( 
     <>
-      <Header/>
-      <Calendar/>
-      <Footer/>
+      <LoggedIn username='yuval' logged={islogged}></LoggedIn>
+      <button onClick={logged}>{islogged? 'log out': 'log in'}</button>
     </>
   )
 }
