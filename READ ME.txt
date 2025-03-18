@@ -1,1 +1,0 @@
-Framework is React, using the Typescript variant with the SWC compiler (Typescript + SWC).
