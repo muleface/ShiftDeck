@@ -83,6 +83,16 @@
   font-family: monospace;
 }
 
+.weekend-header {
+  background-color: #a2a0ef;
+}
+.assigned-header {
+  background-color: red;
+}
+.weekend-assigned-header {
+  background-color: #efa0a0;
+}
+
 .assignment-container {
   padding: 0.5rem;
   margin-top: 0.5rem;
@@ -127,3 +137,4 @@
   border: 1px solid #d1d5db;
   border-radius: 0.25rem;
 }
+

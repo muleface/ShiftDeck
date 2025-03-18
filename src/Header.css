@@ -1,0 +1,26 @@
+ul {
+    list-style-type: none;
+    margin: 300;
+    padding: 0;
+    display:flex;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #333333;
+}
+  
+li {
+}
+  
+li button {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+    background-color: transparent;
+    border: none;
+}
+  
+li button:hover {
+    background-color: #111111;
+}
