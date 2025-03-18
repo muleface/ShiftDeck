@@ -10,7 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApplicationContext>(opt =>
-    opt.UseInMemoryDatabase("TodoList")); // applies the application context class as context to the server.
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))); // applies the application context class as context to the server.
 
 builder.Services.AddRouting(options => { //sets all URL queries to be case-insensitive, to avoid confusion / issues with search by name
     options.LowercaseUrls = true;

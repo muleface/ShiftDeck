@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "hVy9glYOIsU=",
+  "dgSpecHash": "LCD5XZqw1lI=",
   "success": true,
   "projectFilePath": "C:\\Users\\omerc\\OneDrive\\Desktop\\ShiftDeck\\shift-deck\\WebAPI\\WebAPI.csproj",
   "expectedPackageFiles": [
@@ -127,6 +127,8 @@
     "C:\\Users\\omerc\\.nuget\\packages\\njsonschema.annotations\\11.1.0\\njsonschema.annotations.11.1.0.nupkg.sha512",
     "C:\\Users\\omerc\\.nuget\\packages\\njsonschema.newtonsoftjson\\11.1.0\\njsonschema.newtonsoftjson.11.1.0.nupkg.sha512",
     "C:\\Users\\omerc\\.nuget\\packages\\njsonschema.yaml\\11.1.0\\njsonschema.yaml.11.1.0.nupkg.sha512",
+    "C:\\Users\\omerc\\.nuget\\packages\\npgsql\\9.0.3\\npgsql.9.0.3.nupkg.sha512",
+    "C:\\Users\\omerc\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.4\\npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
     "C:\\Users\\omerc\\.nuget\\packages\\nswag.annotations\\14.2.0\\nswag.annotations.14.2.0.nupkg.sha512",
     "C:\\Users\\omerc\\.nuget\\packages\\nswag.aspnetcore\\14.2.0\\nswag.aspnetcore.14.2.0.nupkg.sha512",
     "C:\\Users\\omerc\\.nuget\\packages\\nswag.core\\14.2.0\\nswag.core.14.2.0.nupkg.sha512",

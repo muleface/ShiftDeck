@@ -66,7 +66,7 @@ namespace WebAPI.Controllers
 
             if (shift == null)
             {
-                return NotFound($"No shift by ID: {Id} was found.");
+                return NotFound($"No shift by ID: {id} was found.");
             }
 
             return shift;

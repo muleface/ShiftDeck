@@ -285,3 +285,5 @@ C:\Users\omerc\OneDrive\Desktop\ShiftDeck\shift-deck\WebAPI\bin\Debug\net9.0\ru\
 C:\Users\omerc\OneDrive\Desktop\ShiftDeck\shift-deck\WebAPI\bin\Debug\net9.0\tr\Microsoft.CodeAnalysis.Scripting.resources.dll
 C:\Users\omerc\OneDrive\Desktop\ShiftDeck\shift-deck\WebAPI\bin\Debug\net9.0\zh-Hans\Microsoft.CodeAnalysis.Scripting.resources.dll
 C:\Users\omerc\OneDrive\Desktop\ShiftDeck\shift-deck\WebAPI\bin\Debug\net9.0\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll
+C:\Users\omerc\OneDrive\Desktop\ShiftDeck\shift-deck\WebAPI\bin\Debug\net9.0\Npgsql.dll
+C:\Users\omerc\OneDrive\Desktop\ShiftDeck\shift-deck\WebAPI\bin\Debug\net9.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll

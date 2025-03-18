@@ -5,8 +5,8 @@
     <Import Project="$(NuGetPackageRoot)microsoft.extensions.options\9.0.3\buildTransitive\net8.0\Microsoft.Extensions.Options.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.options\9.0.3\buildTransitive\net8.0\Microsoft.Extensions.Options.targets')" />
     <Import Project="$(NuGetPackageRoot)microsoft.extensions.apidescription.server\6.0.3\build\Microsoft.Extensions.ApiDescription.Server.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.apidescription.server\6.0.3\build\Microsoft.Extensions.ApiDescription.Server.targets')" />
     <Import Project="$(NuGetPackageRoot)nswag.aspnetcore\14.2.0\build\NSwag.AspNetCore.targets" Condition="Exists('$(NuGetPackageRoot)nswag.aspnetcore\14.2.0\build\NSwag.AspNetCore.targets')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.extensions.logging.abstractions\9.0.3\buildTransitive\net8.0\Microsoft.Extensions.Logging.Abstractions.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.logging.abstractions\9.0.3\buildTransitive\net8.0\Microsoft.Extensions.Logging.Abstractions.targets')" />
     <Import Project="$(NuGetPackageRoot)mono.texttemplating\3.0.0\buildTransitive\Mono.TextTemplating.targets" Condition="Exists('$(NuGetPackageRoot)mono.texttemplating\3.0.0\buildTransitive\Mono.TextTemplating.targets')" />
     <Import Project="$(NuGetPackageRoot)microsoft.codeanalysis.analyzers\3.3.4\buildTransitive\Microsoft.CodeAnalysis.Analyzers.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.codeanalysis.analyzers\3.3.4\buildTransitive\Microsoft.CodeAnalysis.Analyzers.targets')" />
-    <Import Project="$(NuGetPackageRoot)microsoft.extensions.logging.abstractions\9.0.3\buildTransitive\net8.0\Microsoft.Extensions.Logging.Abstractions.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.logging.abstractions\9.0.3\buildTransitive\net8.0\Microsoft.Extensions.Logging.Abstractions.targets')" />
   </ImportGroup>
 </Project>
