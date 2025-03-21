@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using WebAPI.Models;
 
 namespace WebAPI.Controllers
@@ -24,7 +25,7 @@ namespace WebAPI.Controllers
         [HttpGet("GetAllInterns")]
         public async Task<ActionResult<IEnumerable<Intern>>> GetAllInterns()
         {
-            return await _context.InternsTable.ToListAsync();
+            return await _context.InternsTable.ToListAsync<Intern>();
         }
 
         // GET: api/interns/getinternsbyid/{id}
@@ -42,17 +43,19 @@ namespace WebAPI.Controllers
         }
 
         // GET: api/interns/getinternsbyname/{name}
-        [HttpGet("GetInternByName/{name}")]
-        public async Task<ActionResult<Intern>> GetInternByName(string name)
+        [HttpGet("GetInternsByName/{name}")]
+        public async Task<ActionResult<IEnumerable<Intern>>> GetInternByFirstName(string name)
         {
-            var intern = await _context.InternsTable.FirstOrDefaultAsync((i) => i.InternName.ToLower() == name.ToLower());
+            var interns = await _context.InternsTable.Where(i => i.FirstName == name || i.LastName == name).ToListAsync<Intern>();
 
-            if (intern == null)
+            if (interns == null)
             {
                 return NotFound($"No intern named {name} was found.");
             }
 
-            return intern;
+            return interns;
         }
+
+        
     }
 }

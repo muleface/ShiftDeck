@@ -8,10 +8,12 @@ public class Intern {
     [Column("intern_id")]
     public int Id {get; set;}
 
-    [Column("name")]
-    public string InternName {get; set;}
+    [Column("first_name")]
+    public string FirstName {get; set;}
 
-    [Column("hospital")]
-    public string Hospital {get; set;}
+    [Column("last_name")]
+    public string LastName {get; set;}
 
+    [Column("department")]
+    public string Department {get; set;} //department is not really needed, everyone will have the same value - Pediatric
 }

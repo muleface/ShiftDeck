@@ -86,26 +86,27 @@ namespace WebAPI.Controllers
             return shifts;
         }
         
-        // GET: api/shifts/getshiftsbydept/{dept}
-        [HttpGet("GetShiftsByDept/{dept}")]
-        public async Task<ActionResult<IEnumerable<Shift>>> GetShiftsByDepartment(string dept) {
-
-            var shifts = await _context.ShiftsTable.Where<Shift>(s => s.Department.ToLower() == dept.ToLower()).ToListAsync<Shift>();
+        // GET: api/shifts/getshiftsbystationnum/{dept}
+        [HttpGet("GetShiftsByStationNum/{dept}")]
+        public async Task<ActionResult<IEnumerable<Shift>>> GetShiftsByDepartment(int num) 
+        {
+            var shifts = await _context.ShiftsTable.Where<Shift>(s => s.StationNum == num).ToListAsync<Shift>();
 
             if (shifts.Count == 0)
             {
-                return NotFound($"No shift exists for {dept}");
+                return NotFound($"No shift exists for station number {num}.");
             }
 
             return shifts;
         }
         
+        //this request should be reworked - i'm not sure if there's even a point in searching by name.
         // GET: api/shifts/getshiftsbyinternname/{name}
         [HttpGet("GetShiftsByInternName/{name}")]
-        public async Task<ActionResult<IEnumerable<Shift>>> GetShiftsByInternName(string name) {
-
-            var intern = await _context.InternsTable.FirstOrDefaultAsync(i => i.InternName.ToLower() == name.ToLower());
-
+        public async Task<ActionResult<IEnumerable<Shift>>> GetShiftsByInternName(string name) 
+        {
+            var intern = await _context.InternsTable.FirstOrDefaultAsync(i => i.FirstName.ToLower() == name.ToLower() || i.LastName.ToLower() == name.ToLower());
+            // this returns only the first intern found that fits the criteria - by order of entry into the database (user creation date), not alphabetical order.
             if (intern == null) 
             {
                 return NotFound($"No intern by name: {name} exists.");
@@ -121,7 +122,21 @@ namespace WebAPI.Controllers
             return shifts;
         }
 
-        // POST: api/shifts/
+        // GET: api/shifts/getshiftsbyinternid/{name}
+        [HttpGet("GetShiftsByInternId/{id}")]
+        public async Task<ActionResult<IEnumerable<Shift>>> GetShiftsByInternName(int id)
+        {
+            var shifts = await _context.ShiftsTable.Where<Shift>(s => s.InternId == id).ToListAsync<Shift>();
+
+            if (shifts.Count == 0) 
+            {
+                return NotFound($"No shifts found for internId: {id}.");
+            }
+
+            return shifts;
+        }
+
+        // POST: api/shifts
         [HttpPost()]
         public async Task<ActionResult<Shift>> AddShift(Shift shift) 
         {
@@ -142,19 +157,18 @@ namespace WebAPI.Controllers
                     return BadRequest("Shift date is required.");
                 }
 
-                if (string.IsNullOrWhiteSpace(shift.Department))
+                if (await _context.StationsTable.FirstOrDefaultAsync<Station>(st => st.StationNum == shift.StationNum) == null)
                 {
-                    return BadRequest("Department is required.");
+                    return BadRequest("Station is nonexistent.");
                 }
 
                 bool shiftOverlap = await _context.ShiftsTable.AnyAsync(s => 
-                    s.InternId == shift.InternId && 
                     s.ShiftDate.Date == shift.ShiftDate.Date &&
-                    s.Department == shift.Department);
+                    s.StationNum == shift.StationNum); //overlap for a shift on the same day and in the same station - could be different interns.
                     
                 if (shiftOverlap)
                 {
-                    return BadRequest($"This intern already has a shift in {shift.Department} on {shift.ShiftDate:yyyy-MM-dd}");
+                    return BadRequest($"This intern already has a shift in station no. {shift.StationNum} on {shift.ShiftDate:yyyy-MM-dd}");
                 }
 
                 // end of data validation conditionals
@@ -171,10 +185,57 @@ namespace WebAPI.Controllers
             }
         }
 
+        //PUT: api/shifts/
+        [HttpPut()]
+        public async Task<ActionResult<Shift>> ChangeShift (Shift newShift) 
+        {
+            try {
+                // data validation conditionals
+                if (newShift == null)
+                {
+                    return BadRequest("Shift data is required.");
+                }
+
+                if(await _context.InternsTable.FirstOrDefaultAsync<Intern>(i => i.Id == newShift.InternId) == null) // intern doesn't exist in database by id
+                {
+                    return BadRequest($"No intern by Id {newShift.InternId} found.");
+                }
+                
+                Shift? oldShift = await _context.ShiftsTable.FindAsync(newShift.Id);
+
+                if (oldShift == null) 
+                {
+                    return BadRequest($"No shift by Id {newShift.Id} found.");
+                }
+
+                else if (oldShift.InternId == newShift.InternId)
+                {
+                    return BadRequest($"Shift is already assigned to intern ID: {oldShift.InternId}. No changes necessary.");
+                }
+
+                if (await _context.ShiftsTable.AnyAsync<Shift>(s => s.Id != newShift.Id &&
+                                                                    s.ShiftDate == newShift.ShiftDate &&
+                                                                    s.InternId == newShift.InternId) == true)
+                {
+                    return BadRequest($"Intern ID: {newShift.InternId} is already assigned to a shift on {newShift.ShiftDate}");
+                }
+
+                oldShift.InternId = newShift.InternId; //this actually accesses the database and modifies the entry.
+                await _context.SaveChangesAsync();
+
+                return NoContent(); 
+                                                                                          
+            }
+            catch (Exception ex) {
+
+                return BadRequest($"Failed to add shift : {ex.Message}");
+            }
+        }
+
         //DELETE: api/shifts/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteShift(int id) {
-
+        public async Task<IActionResult> DeleteShift(int id) 
+        {
             var shift = await _context.ShiftsTable.FirstOrDefaultAsync<Shift>(s => s.Id == id);
 
             if (shift == null)
