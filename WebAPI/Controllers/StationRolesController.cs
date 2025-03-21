@@ -68,5 +68,95 @@ namespace WebAPI.Controllers
             
             return await GetRolesByInternID(intern.Id);
         }
+
+        //GET: api/stationroles/rolesbystationnum/{num}
+        [HttpGet("/RolesByStationNum/{num}")]
+        public async Task<ActionResult<IEnumerable<StationRole>>> GetRolesByStationNum (int num)
+        {
+            var stationRoles = await _context.StationRolesTable.Where(r => r.StationNum == num).ToListAsync<StationRole>();
+
+            if (stationRoles == null)
+            {
+                return BadRequest($"No roles designated for station no. {num}");
+            }
+
+            return stationRoles;
+        }
+
+        //GET: api/stationroles/rolesbystationname/{name}
+        [HttpGet("/RolesByStationName/{name}")]
+        public async Task<ActionResult<IEnumerable<StationRole>>> GetRolesByStationName (string name)
+        {
+            var station = await _context.StationsTable.FirstOrDefaultAsync(r => r.StationName == name);
+
+            if (station == null)
+            {
+                return BadRequest($"No station by name {name} found.");
+            }
+
+            return await GetRolesByStationNum(station.StationNum);
+        }
+
+        //POST: api/stationroles
+        [HttpPost()]
+        public async Task<ActionResult<StationRole>> AddStationRole (StationRole role)
+        {
+            if (role == null)
+            {
+                return BadRequest("Data required for station role addition.");
+            }
+
+            var roleOverlap = await _context.StationRolesTable.FirstOrDefaultAsync(r => r.StationNum == role.StationNum &&
+                                                                          r.InternId == role.InternId);
+            if (roleOverlap != null)
+            {
+                return BadRequest($"Role is already assigned for intern ID: {role.InternId} at station no. {role.StationNum}.");
+            }
+
+            _context.StationRolesTable.Add(role);
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // i decided to not return anything here since we can already know the primary key - it's {stationNum, InternID}.                                                                          
+        }
+
+        //PUT: api/stationroles
+        [HttpPut()]
+        public async Task<ActionResult<StationRole>> ChangeStationRole (StationRole role)
+        {
+            if (role == null)
+            {
+                return BadRequest("Data required for station role change.");
+            }
+
+            var oldStationRole = await _context.StationRolesTable.FirstOrDefaultAsync(r => r.InternId == role.InternId &&
+                                                                                           r.StationNum == role.StationNum);
+            
+            if (oldStationRole == null)
+            {
+                return BadRequest($"No rule for intern ID: {role.InternId} at station no. {role.StationNum} exists.");
+            }
+
+            oldStationRole.Role = role.Role;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        //DELETE: api/stationroles/{internid}
+        [HttpDelete("/{internId}")]
+        public async Task<ActionResult<StationRole>> DeleteStationRolesByName (int? internId)
+        {
+            if (internId == null)
+            {
+                return BadRequest("No ID entered for role deletion.");
+            }
+            
+            var stationRoles = await _context.StationRolesTable.Where(r => r.InternId == internId).ToListAsync<StationRole>();
+
+            _context.StationRolesTable.RemoveRange(stationRoles);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

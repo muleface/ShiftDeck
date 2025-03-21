@@ -233,7 +233,7 @@ namespace WebAPI.Controllers
         }
 
         //DELETE: api/shifts/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("/{id}")]
         public async Task<IActionResult> DeleteShift(int id) 
         {
             var shift = await _context.ShiftsTable.FirstOrDefaultAsync<Shift>(s => s.Id == id);

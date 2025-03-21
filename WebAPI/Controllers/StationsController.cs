@@ -86,8 +86,8 @@ namespace WebAPI.Controllers
 
         }
 
-        //DELETE: api/stations
-        [HttpDelete()]
+        //DELETE: api/stations/{name}
+        [HttpDelete("/{name}")]
         public async Task<ActionResult<Station>> DeleteStation (string name)
         {
             var station = await _context.StationsTable.FirstOrDefaultAsync(st => st.StationName == name);
