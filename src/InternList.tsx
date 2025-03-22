@@ -45,7 +45,7 @@ function InternList() {
         {loading ? 
         (<p>Loading Interns from server</p>) :
         (
-            <ul>
+            <ol>
                 {interns.map(intern => (
                                 <li key={intern.id}>
                                     <div>
@@ -53,7 +53,7 @@ function InternList() {
                                     </div>
                                 </li>
                             ))}
-            </ul>
+            </ol>
         )}
         </>
     );
