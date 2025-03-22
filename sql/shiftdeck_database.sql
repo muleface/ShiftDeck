@@ -124,7 +124,7 @@ ALTER TABLE ONLY public.shifts ALTER COLUMN shift_id SET DEFAULT nextval('public
 -- Data for Name: interns; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.interns (intern_id, name, hospital) FROM stdin;
+COPY public.interns (intern_id, name, hospital) FROM stdin WITH (FORMAT text);;
 1	Sokolov	Wolfson
 2	Habiballa	Wolfson
 3	Chush	Wolfson

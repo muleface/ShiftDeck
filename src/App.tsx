@@ -1,25 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext} from 'react';
+import { BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom';
 import './App.css'
-import Calendar from './Calendar.tsx'
 import Header from './Header.tsx'
 import Footer from './Footer.tsx'
-import LoggedIn from './LoggedIn.tsx'
-import InternList from './InternList.tsx'
+import LogIn  from './LogIn.tsx';
+
+interface UserContextType {
+  user: string;
+  setUser: React.Dispatch<React.SetStateAction<string>>;
+  isLogged: boolean;
+  setIsLogged: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+// Create context with default value
+export const UserContext = createContext<UserContextType | undefined>(undefined);
 
 
 function App() {
-  const [islogged, setlogged] = useState(false);
-  const logged = () => {
-    setlogged(!islogged);
-  };
-  return ( 
+  const [isLogged, setIsLogged] = useState(false);
+  const [user, setUser] = useState("");  
+
+  return (
     <>
-      <Header />
-      <Calendar />
-      <InternList />
-      <Footer />
-    </>
-  )
+      {isLogged ? (
+        <>
+        
+          <Header />
+
+          <p>hello {user}</p>
+          <Footer />
+        </>
+      ) : (
+        <UserContext.Provider value={{user, setUser, isLogged, setIsLogged}}>
+          <LogIn />
+        </UserContext.Provider>
+      )}
+      </>
+  );
+    
 }
 
 export default App
