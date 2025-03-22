@@ -44,7 +44,7 @@ namespace WebAPI.Controllers
 
         // GET: api/interns/getinternsbyname/{name}
         [HttpGet("GetInternsByName/{name}")]
-        public async Task<ActionResult<IEnumerable<Intern>>> GetInternByFirstName(string name)
+        public async Task<ActionResult<IEnumerable<Intern>>> GetInternByName(string name)
         {
             var interns = await _context.InternsTable.Where(i => i.FirstName == name || i.LastName == name).ToListAsync<Intern>();
 

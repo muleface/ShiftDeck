@@ -5,6 +5,7 @@ import Header from './Header.tsx'
 import Footer from './Footer.tsx'
 import LoggedIn from './LoggedIn.tsx'
 import InternList from './InternList.tsx'
+import InternTester from './InternTester.tsx'
 
 
 function App() {
@@ -15,8 +16,7 @@ function App() {
   return ( 
     <>
       <Header />
-      <Calendar />
-      <InternList />
+      <InternTester />
       <Footer />
     </>
   )

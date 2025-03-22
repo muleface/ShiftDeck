@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 
 namespace WebAPI.Models;
 
@@ -14,5 +13,19 @@ public class ApplicationContext : DbContext
     public DbSet<Shift> ShiftsTable {get; set;} 
     public DbSet<Station> StationsTable {get; set;}
     public DbSet<StationRole> StationRolesTable {get; set;}
-    public DbSet<Login> LoginsTable {get; set;}
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) //sets a composite primary key (InternId, StationNum) for the StationRole object using fluent API
+    {
+        
+        modelBuilder.Entity<StationRole>()
+            .HasKey(sr => new { sr.InternId, sr.StationNum });
+            
+        modelBuilder.Entity<StationRole>()
+            .Property(sr => sr.InternId)
+            .HasColumnOrder(0);
+            
+        modelBuilder.Entity<StationRole>()
+            .Property(sr => sr.StationNum)
+            .HasColumnOrder(1);
+    }
 }
