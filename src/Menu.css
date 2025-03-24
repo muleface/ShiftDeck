@@ -1,0 +1,73 @@
+/* Ensure menu stays fixed */
+.menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 60px; /* Initial width (collapsed) */
+    height: 100%;
+    background-color: #333;
+    color: white;
+    transition: width 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    z-index: 1000; /* Make sure it stays above content */
+  }
+  
+  /* Expand menu on hover */
+  .menu:hover {
+    width: 30%;
+  }
+  
+  /* Fix menu content visibility issues */
+  .menu-content {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out;
+    width: 100%;
+    padding: 20px;
+  }
+  
+  /* Show menu content when expanded */
+  .menu:hover .menu-content {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* Navigation styles */
+  .menu-content nav {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .menu-content ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .menu-content li {
+    margin: 10px 0;
+  }
+  
+  /* Button styles */
+  .menu-content button {
+    display: block;
+    width: 100%;
+    color: white;
+    background-color: transparent;
+    border: none;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .menu-content button:hover {
+    background-color: #111;
+  }
+  
+  .menu-content a {
+    text-decoration: none;
+    color: inherit;
+  }
+  

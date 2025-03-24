@@ -1,20 +1,56 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: rgb(236, 223, 207);
+/* General styles */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: hsl(17, 100%, 80%);
   text-align: center;
+  overflow-x: hidden; /* Prevent horizontal scroll when moving content */
 }
 
+/* Ensure smooth animations */
+.page-content {
+  position: relative;
+  transition: transform 0.3s ease-in-out;
+  padding: 2rem;
+}
+
+/* When the menu expands, shift the page smoothly */
+.page-content.menu-expanded {
+  transform: translateX(-30%);
+}
+
+/* Default small shift when menu is closed */
+.page-content.menu-closed {
+  transform: translateX(-60px);
+}
+
+/* Fix header/footer spacing */
+.header, .footer {
+  width: 100%;
+  text-align: center;
+  padding: 1rem;
+  background-color: #444;
+  color: white;
+}
+
+/* Fix main app layout */
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* Styling for other elements */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
