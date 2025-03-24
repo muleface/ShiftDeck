@@ -16,7 +16,7 @@ namespace WebAPI.Controllers
 
         /* SUMMARY OF ACTIONS:
         GET:
-        api/shifts -> returns all shift entries as a list of Shift objects. example call: GET serverURL:port/api/shifts
+        api/shifts/getallshifts -> returns all shift entries as a list of Shift objects. example call: GET serverURL:port/api/shifts
         api/shifts/getshiftbyid -> returns the shift with the corresponding request ID. should always be a single shift. example call: GET serverURL:port/api/shifts/getshiftbyid/1 (1 is the id)
         api/shifts/getshiftsbydate -> returns list of shifts with the corresponding request date. example call: GET serverURL:port/api/shifts/getshiftsbydate/yyyy-mm-dd
         api/shifts/getshiftsbydept -> returns list of shifts of the corresponding department. example call: GET serverURL:port/api/shifts/getshiftsbydept/Cardiology (should be altered in the future)
@@ -44,8 +44,8 @@ namespace WebAPI.Controllers
             _context = context;
         }
 
-        //GET: api/shifts
-        [HttpGet]
+        //GET: api/shifts/getallshifts
+        [HttpGet("GetAllShifts")]
         public async Task<ActionResult<IEnumerable<Shift>>> GetAllShifts() 
         {
             var shifts = await _context.ShiftsTable.ToListAsync<Shift>();
@@ -86,8 +86,8 @@ namespace WebAPI.Controllers
             return shifts;
         }
         
-        // GET: api/shifts/getshiftsbystationnum/{dept}
-        [HttpGet("GetShiftsByStationNum/{dept}")]
+        // GET: api/shifts/getshiftsbystationnum/{num}
+        [HttpGet("GetShiftsByStationNum/{num}")]
         public async Task<ActionResult<IEnumerable<Shift>>> GetShiftsByDepartment(int num) 
         {
             var shifts = await _context.ShiftsTable.Where<Shift>(s => s.StationNum == num).ToListAsync<Shift>();
@@ -223,7 +223,7 @@ namespace WebAPI.Controllers
                 oldShift.InternId = newShift.InternId; //this actually accesses the database and modifies the entry.
                 await _context.SaveChangesAsync();
 
-                return NoContent(); 
+                return Ok(oldShift); 
                                                                                           
             }
             catch (Exception ex) {
@@ -246,7 +246,7 @@ namespace WebAPI.Controllers
             _context.ShiftsTable.Remove(shift);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(shift);
         }
     }
 }

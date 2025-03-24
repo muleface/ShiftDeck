@@ -100,7 +100,7 @@ namespace WebAPI.Controllers
             _context.StationsTable.Remove(station);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(station);
         }
     }
 }

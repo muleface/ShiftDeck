@@ -1,7 +1,7 @@
 import api from './APIClient.tsx'
-import Intern from './Models.tsx'
+import {Intern, createIntern} from './Models.tsx'
 
-const BASE_URL = '/interns';
+const BASE_URL = '/Interns';
 
 const internService = {
     getAllInterns: async(): Promise<Intern[]> => {

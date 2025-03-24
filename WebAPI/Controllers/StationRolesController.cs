@@ -116,7 +116,7 @@ namespace WebAPI.Controllers
             _context.StationRolesTable.Add(role);
             await _context.SaveChangesAsync();
 
-            return NoContent(); // i decided to not return anything here since we can already know the primary key - it's {stationNum, InternID}.                                                                          
+            return Ok(role); // i decided to not return anything here since we can already know the primary key - it's {stationNum, InternID}.                                                                          
         }
 
         //PUT: api/stationroles

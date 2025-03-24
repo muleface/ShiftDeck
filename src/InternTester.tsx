@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import internService from './API_Services/InternService';
+import internService from './API_Services/internService.tsx';
 import Intern from './API_Services/Models.tsx';
 
 function InternTester() {
