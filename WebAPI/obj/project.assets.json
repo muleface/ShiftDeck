@@ -8575,19 +8575,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\omerc\\.nuget\\packages\\": {}
+    "C:\\Users\\User\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\omerc\\OneDrive\\Desktop\\ShiftDeck\\shift-deck\\WebAPI\\WebAPI.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Desktop\\shiftdeck\\ShiftDeck\\WebAPI\\WebAPI.csproj",
       "projectName": "WebAPI",
-      "projectPath": "C:\\Users\\omerc\\OneDrive\\Desktop\\ShiftDeck\\shift-deck\\WebAPI\\WebAPI.csproj",
-      "packagesPath": "C:\\Users\\omerc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\omerc\\OneDrive\\Desktop\\ShiftDeck\\shift-deck\\WebAPI\\obj\\",
+      "projectPath": "C:\\Users\\User\\Desktop\\shiftdeck\\ShiftDeck\\WebAPI\\WebAPI.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\User\\Desktop\\shiftdeck\\ShiftDeck\\WebAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\omerc\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -8611,7 +8611,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.100"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -8673,7 +8673,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
