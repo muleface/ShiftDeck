@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import internService from './API_Services/internService.tsx';
-import Intern from './API_Services/Models.tsx';
+import {Intern} from './API_Services/Models.tsx';
 
 function InternTester() {
   const [allInterns, setAllInterns] = useState<Intern[]>([]);

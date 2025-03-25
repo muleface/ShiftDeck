@@ -1,21 +1,20 @@
 import { useState, useEffect, useContext } from 'react';
-import { UserContext } from "./App";
-import internService from './API_Services/InternService';
-import Intern from './API_Services/Models.tsx';
+import { InternsContext, UserContext } from "./App";
+import internService from './API_Services/internService.tsx';
+import {Intern} from './API_Services/Models.tsx';
 
 function SearchIntern() {
   const [name, setName] = useState('');
-  const [allInterns, setAllInterns] = useState<Intern[]>([]);
   const [filteredInterns, setFilteredInterns] = useState<Intern[]>([]);
+  const icontext = useContext(InternsContext);
 
+  if (!icontext) {
+    throw new Error("useUserContext must be used within a UserContext.Provider");
+  }
+
+  const { allInterns } = icontext;
+  const { setSearchedUser } = icontext;
   // Fetch all interns when the component mounts
-  useEffect(() => {
-    internService.getAllInterns()
-      .then(data => {
-        setAllInterns(data);
-      })
-      .catch(err => console.error('Error fetching all interns:', err));
-  }, []);
 
   useEffect(() => {
     if (name === '') {
@@ -43,7 +42,7 @@ function SearchIntern() {
       {filteredInterns.length > 0 ? (
         <ul>
           {filteredInterns.map((intern, index) => (
-            <li key={index}>
+            <li key={index} onClick={() => setSearchedUser(intern.id)}>
               {intern.firstName} {intern.lastName}
             </li>
           ))}

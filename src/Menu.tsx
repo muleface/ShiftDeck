@@ -28,6 +28,7 @@ function Menu({ setMenuExpanded }: MenuProps) {
             <li><Link to="/calendar"><button>Calendar</button></Link></li>
             <li><button>add worker</button></li>
             <li><Link to="/search"><button>Search</button></Link></li>
+            <li><Link to="/user"><button>User Info</button></Link></li>
           </ul>
         </nav>
       </div>
