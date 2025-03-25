@@ -3,7 +3,7 @@ import './Menu.css';
 import SearchIntern from './SearchIntern';
 
 interface MenuProps {
-  setMenuExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+  setMenuExpanded:  (expanded:boolean) => void;
 }
 
 function Menu({ setMenuExpanded }: MenuProps) {

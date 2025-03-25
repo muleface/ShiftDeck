@@ -1,10 +1,10 @@
 import { useState, useContext } from 'react';
 import './LogIn.css';
-import { UserContext } from "./App";
+import { AppContext } from "./AppContext";
 
 function LogIn() {
   const [username, setUsername] = useState('');
-  const userContext = useContext(UserContext);
+  const userContext = useContext(AppContext);
 
   if (!userContext) {
     throw new Error("useUserContext must be used within a UserContext.Provider");

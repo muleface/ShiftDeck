@@ -1,0 +1,22 @@
+.errorPopUp {
+  padding: 20px;
+  background-color: red;
+  color: white;
+  margin-bottom: 15px;
+  border-radius: 3px;
+}
+
+.closeButton {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.closeButton:hover {
+    color:black;
+}

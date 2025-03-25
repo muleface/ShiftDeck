@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import internService from './API_Services/internService.tsx';
 import {Intern} from './API_Services/Models.tsx';
+import "./UserInfo.css";
 
 function UserInfo(props:{id:number}) {
   const [intern, setIntern] = useState<Intern>();
@@ -14,7 +15,7 @@ function UserInfo(props:{id:number}) {
       })
       .catch(err => console.error('Error intern:', err));
     }
-  }, []);
+  }, [props.id]);
   if(props.id===0)
   {
     return(
@@ -22,7 +23,7 @@ function UserInfo(props:{id:number}) {
     );
   }
   return (
-    <div className="Search-container">
+    <div className="info">
       <h2>Intern Info</h2>
       <p>FIrst Name: {intern?.firstName}</p>
       <p>Last Name: {intern?.lastName}</p>
