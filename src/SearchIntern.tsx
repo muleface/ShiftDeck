@@ -1,12 +1,13 @@
 import { useState, useEffect, useContext } from 'react';
-import { InternsContext, UserContext } from "./App";
 import internService from './API_Services/internService.tsx';
 import {Intern} from './API_Services/Models.tsx';
+import { AppContext } from "./AppContext";
+import { Link } from 'react-router-dom';
 
 function SearchIntern() {
   const [name, setName] = useState('');
   const [filteredInterns, setFilteredInterns] = useState<Intern[]>([]);
-  const icontext = useContext(InternsContext);
+  const icontext = useContext(AppContext);
 
   if (!icontext) {
     throw new Error("useUserContext must be used within a UserContext.Provider");
@@ -43,8 +44,9 @@ function SearchIntern() {
         <ul>
           {filteredInterns.map((intern, index) => (
             <li key={index} onClick={() => setSearchedUser(intern.id)}>
-              {intern.firstName} {intern.lastName}
-            </li>
+              <Link to="/user">{intern.firstName} {intern.lastName}</Link>
+              </li>
+              
           ))}
         </ul>
       ) : (

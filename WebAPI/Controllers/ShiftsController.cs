@@ -142,6 +142,7 @@ namespace WebAPI.Controllers
         {
             try {
                 // data validation conditionals
+                
                 if (shift == null)
                 {
                     return BadRequest("Shift data is required.");
@@ -172,7 +173,7 @@ namespace WebAPI.Controllers
                 }
 
                 // end of data validation conditionals
-
+                shift.ShiftDate = shift.ShiftDate.ToUniversalTime(); // Convert to UTC
                 _context.ShiftsTable.Add(shift);
                 await _context.SaveChangesAsync();
 

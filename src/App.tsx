@@ -39,10 +39,8 @@ function AppContent() {
           <div className="page-content">
             <Header />
             <Routes>
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/calendar" element={<Calendar />} />
-              
-             
+              <Route path="/" element={<Calendar />} />
+              <Route path="/user" element={<UserInfo />} />
             </Routes>
             <Footer />
           </div>
