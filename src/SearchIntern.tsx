@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import internService from './API_Services/internService.tsx';
+import internService from './API_Services/blablah.tsx';
 import {Intern} from './API_Services/Models.tsx';
 import { AppContext } from "./AppContext";
 import { Link } from 'react-router-dom';
