@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import internService from './API_Services/blablah.tsx';
+import internService from './API_Services/internService.tsx';
 import {Intern} from './API_Services/Models.tsx';
 import "./UserInfo.css";
 import { AppContext } from "./AppContext";

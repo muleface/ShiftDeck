@@ -6,7 +6,7 @@ import Footer from "./Footer.tsx";
 import LogIn from "./LogIn.tsx";
 import SearchIntern from "./SearchIntern.tsx";
 import Menu from "./Menu.tsx";
-import internService from './API_Services/blablah.tsx';
+import internService from './API_Services/internService.tsx';
 import {Intern} from './API_Services/Models.tsx';
 import Calendar from "./Calendar.tsx";
 import HomePage from "./HomePage.tsx";

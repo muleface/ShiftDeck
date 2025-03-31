@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, createContext } from 'react';
 import {createPortal} from 'react-dom';
 import './AppContext.module.css';
 import {Intern, createIntern, Shift, createShift, Station, StationRole, createStationRole} from './API_Services/Models.tsx';
-import internService from './API_Services/blablah.tsx';
+import internService from './API_Services/internService.tsx';
 import shiftService from './API_Services/shiftService.tsx';
 import stationService from './API_Services/stationService.tsx';
 
