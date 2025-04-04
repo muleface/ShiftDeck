@@ -13,6 +13,7 @@ public class ApplicationContext : DbContext
     public DbSet<Shift> ShiftsTable {get; set;} 
     public DbSet<Station> StationsTable {get; set;}
     public DbSet<StationRole> StationRolesTable {get; set;}
+    public DbSet<Login> LoginTable {get; set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) //sets a composite primary key (InternId, StationNum) for the StationRole object using fluent API
     {

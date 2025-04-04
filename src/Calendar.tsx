@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import './Calendar.css';
 import { AppContext } from './AppContext';
-import {Intern,Shift,createShift} from './API_Services/Models.tsx';
+import {Intern,Shift,createShift, Login, createLogin} from './API_Services/Models.tsx';
 import shiftService from './API_Services/shiftService.tsx';
+import loginService from './API_Services/loginService.tsx';
 
 interface CalendarDay {
   date: Date;
@@ -15,6 +16,7 @@ function Calendar(){
 
   const [calendar, setCalendar] = useState<(CalendarDay | null)[]>([]);
   const [shift, setshift] = useState<(Shift | null)>(null);
+  const [logintest, setlogintest] = useState<(Login)>({username:"omer",userPassword:"1234",id:1,status:1});
   const [id, setid] = useState<(number)>(0);
   const [allShifts, setAllShifts] = useState<(Shift[])>([]);
   const context = useContext(AppContext);
@@ -57,7 +59,7 @@ function Calendar(){
       .catch(err => {
         console.error('Error fetching all shifts:', err);
       });
-  }, []);
+  }, [currentDate]);
 
   // Generate calendar days for current month
   useEffect(() => {
@@ -158,7 +160,7 @@ function Calendar(){
         <button 
           className="nav-button"
           onClick={nextMonth}>
-          Next
+          blablabla
         </button>
       </div>
       
@@ -226,6 +228,14 @@ function Calendar(){
       }
       }}>
         Save Changes
+      </button>
+      <button 
+      onClick={() => {
+        console.log(logintest);
+        loginService.addLogin(logintest);
+
+      }}>
+        add user
       </button>
       {/* 
       <h3>Filtered Interns:</h3>

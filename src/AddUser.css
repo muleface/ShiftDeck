@@ -1,0 +1,63 @@
+/* Center the signup box on the page */
+.signup-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 50px auto;
+    background: #f7f9fc;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* Heading */
+  .signup-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  /* Input fields & select */
+  .signup-container input,
+  .signup-container select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccd1d9;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border 0.3s ease;
+  }
+  
+  .signup-container input:focus,
+  .signup-container select:focus {
+    border-color: #4a90e2;
+    outline: none;
+  }
+  
+  /* Button */
+  .signup-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+  }
+  
+  .signup-container button:hover {
+    background-color: #357ab8;
+  }
+  
+  /* Optional: Add smooth transitions to inputs */
+  .signup-container input,
+  .signup-container select,
+  .signup-container button {
+    transition: all 0.3s ease;
+  }
+  

@@ -25,7 +25,7 @@ function Menu({ setMenuExpanded }: MenuProps) {
         <nav>
           <ul>
             <li><Link to="/"><button>Calendar</button></Link></li>
-            <li><button>add worker</button></li>
+            <li><Link to="/adduser"><button>Add Intern</button></Link></li>
             <SearchIntern/>
           </ul>
         </nav>

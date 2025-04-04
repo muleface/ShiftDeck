@@ -7,9 +7,9 @@ import LogIn from "./LogIn.tsx";
 import SearchIntern from "./SearchIntern.tsx";
 import Menu from "./Menu.tsx";
 import Calendar from "./Calendar.tsx";
-import HomePage from "./HomePage.tsx";
 import UserInfo from "./UserInfo.tsx";
 import {AppProvider, AppContext} from './AppContext.tsx'
+import AddUser from "./AddUser.tsx";
 
 function App () {
   return (
@@ -41,6 +41,7 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<Calendar />} />
               <Route path="/user" element={<UserInfo />} />
+              <Route path="/adduser" element={<AddUser />} />
             </Routes>
             <Footer />
           </div>
