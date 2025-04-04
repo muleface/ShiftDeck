@@ -14,6 +14,7 @@ function AddUser(){
   const [id, setid] = useState<(number)>(28);
   const [status, setStatus] = useState<(number)>(0);
   const context = useContext(AppContext);
+  const [intern, setIntern] = useState<Intern>();
 
   if (!context) {
     throw new Error("useUserContext must be used within a UserContext.Provider");
@@ -37,8 +38,18 @@ function AddUser(){
       return;
     }
   
-    internService.addIntern({id:id,firstName:firstName,lastName:lastName,department:department});
-    loginService.addLogin({username:userName,userPassword:password,id:id,status:status});
+    internService.addIntern(firstName,lastName,department)
+    .then(data => {
+      setIntern(data);
+    })
+    .catch(error => {
+      console.log("Database did not return an intern object, intern creation likely unsuccessful.");
+      return;
+    })
+    if (!intern) {
+      return;
+    }
+    loginService.addLogin({username:userName,userPassword:password,id:intern.id,status:status});
     setid(i=>i++);
     alert("Registered new Intern");
   };

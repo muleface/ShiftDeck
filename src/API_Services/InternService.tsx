@@ -17,7 +17,11 @@ const internService = {
         return response.data;
     },
     // Function to add an intern
-    addIntern: async (intern: Intern): Promise<Intern> => {
+    addIntern: async (firstName:string, lastName:string, department:string): Promise<Intern> => {
+    let intern = {firstName: firstName,
+                  lastName: lastName,
+                  department: department
+    }
     const response = await api.post<Intern>(`${BASE_URL}`, intern);
     return response.data;
     }
