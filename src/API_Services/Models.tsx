@@ -46,6 +46,21 @@ export function createShift(id:number, internId:number, shiftDate:Date, stationN
    }
 }
 
+export interface fauxShift {
+    internId: number;
+    shiftDate: Date;
+    stationNum: number;
+}
+
+export function createFauxShift(intern:number, date:Date, station:number) {
+    return {
+        internId:intern,
+        shiftDate:date,
+        stationNum:station
+      };
+}
+
+
 export interface Station {
     stationNum: number;
     stationName: string;

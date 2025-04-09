@@ -138,3 +138,9 @@
   border-radius: 0.25rem;
 }
 
+.pending-change {
+  border: 2px dashed #4caf50; /* Green dashed border */
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Subtle green glow */
+}
+
+
