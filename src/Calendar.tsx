@@ -160,7 +160,7 @@ function Calendar(){
         <button 
           className="nav-button"
           onClick={nextMonth}>
-          blablabla
+          Next
         </button>
       </div>
       
@@ -229,26 +229,6 @@ function Calendar(){
       }}>
         Save Changes
       </button>
-      <button 
-      onClick={() => {
-        console.log(logintest);
-        loginService.addLogin(logintest);
-
-      }}>
-        add user
-      </button>
-      {/* 
-      <h3>Filtered Interns:</h3>
-      {allShifts.length > 0 ? (
-        <ul>
-          {allShifts.map((shift, index) => (
-            <li key={index}>{shift.internId}</li>
-          ))}
-        </ul>
-        ) : (
-          <p>No interns found matching your search</p>
-        )}
-        */}
     </div>
   );
 };

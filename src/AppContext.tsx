@@ -2,17 +2,18 @@
 import {createPortal} from 'react-dom';
 import './AppContext.module.css';
 import {Intern, createIntern, Shift, createShift, Station, StationRole, createStationRole} from './API_Services/Models.tsx';
-import internService from './API_Services/internService.tsx';
+import internService from './API_Services/InternService.tsx';
 import shiftService from './API_Services/shiftService.tsx';
 import stationService from './API_Services/stationService.tsx';
 
 
 interface AppContextType {
     //user-related variables
-    user: string;
-    setUser: (user:string) => void; //just defining the function, idk about dispatches.
-    isLogged: boolean;
-    setIsLogged: (isLogged:boolean) => void;
+    user: Intern|undefined;
+    setUser: (user:Intern|undefined) => void;
+    
+    status:number;
+    setStatus: (status:number) => void;
 
     //interns-related variables
     allInterns: Intern[];
@@ -41,8 +42,8 @@ function ErrorPopUp(msg:string) { //handles the popup error, given a message.
 
 export function AppProvider({children}:{ children:React.ReactNode }) {
     // initial values to pass over to child components
-    const [isLogged, setIsLogged] = useState(false);
-    const [user, setUser] = useState("");
+    const [status, setStatus] = useState<number>(0);
+    const [user, setUser] = useState<Intern>();
     const [menuExpanded, setMenuExpanded] = useState(false);
     const [allInterns, setAllInterns] = useState<Intern[]>([]);
     const [allStations, setAllStations] = useState<Station[]>([]);
@@ -82,8 +83,9 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
     }
     }, [menuExpanded]);
 
-    return (<AppContext.Provider value={ {isLogged, setIsLogged, 
-                                user, setUser, 
+    return (<AppContext.Provider value={ { 
+                                user, setUser,
+                                status,setStatus, 
                                 menuExpanded, setMenuExpanded,
                                 allInterns, setAllInterns,
                                 allStations, setAllStations,

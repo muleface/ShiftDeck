@@ -8,8 +8,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using WebAPI.Models;
 
+public class LoginRequest
+{
+    public string UserName { get; set; }
+    public string UserPassword { get; set; }
+}
+
 namespace WebAPI.Controllers
 {
+    
     [Route("api/[controller]")] //means that each query's initial URL is serverURL:port/api/login
     [ApiController]
     public class LoginController : ControllerBase
@@ -48,21 +55,20 @@ public async Task<ActionResult<IEnumerable<Login>>> GetAllLogins()
 
             return login;
         }
-        /*
-        // GET: api/Login/getLoginsByPassword/{password}
-        [HttpGet("getLoginsByPassword/{password}")]
-        public async Task<ActionResult<IEnumerable<Login>>> getLoginsByPassword(string password)
-        {
-            var login = await _context.LoginTable.Where(i => i.user_password == password).ToListAsync<Login>();
+        // GET: api/Login/getLoginsByData?username=foo&userPassword=bar
+[HttpGet("getLoginsByData")]
+public async Task<ActionResult<Login>> GetLoginsByData(string username, string userPassword)
+{
+    var login = await _context.LoginTable
+        .FirstOrDefaultAsync(l => l.username == username && l.userPassword == userPassword);
 
-            if (login == null)
-            {
-                return NotFound();
-            }
+    if (login == null)
+    {
+        return NotFound();
+    }
 
-            return login;
-        }
-        */
+    return login;
+}
         // GET: api/Login/getLoginsByInternId/{id}
         [HttpGet("getLoginsByInternId/{id}")]
         public async Task<ActionResult<IEnumerable<Login>>> getLoginsByInternId(int id)
@@ -92,6 +98,20 @@ public async Task<ActionResult<Login>> AddLogin(Login login)
     await _context.SaveChangesAsync();
 
     return CreatedAtAction(nameof(getLoginsByUserName), new { username = login.username }, login);
+}
+
+[HttpPost("login")]
+public async Task<ActionResult<object>> Login([FromBody] LoginRequest request)
+{
+    var login = await _context.LoginTable
+        .FirstOrDefaultAsync(l => l.username == request.UserName && l.userPassword == request.UserPassword);
+
+    if (login == null)
+    {
+        return NotFound();
+    }
+
+    return Ok(new { id = login.id, status = login.status }); // Return id and status if login is found
 }
 
         

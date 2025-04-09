@@ -24,7 +24,8 @@ function AppContent() {
     if (!context)
       throw new Error("Fatal error - context failed to load.");
 
-    const { isLogged, setIsLogged,
+    const {
+      
       user, setUser,
       menuExpanded, setMenuExpanded,
       searchedUser, setSearchedUser, 
@@ -33,7 +34,7 @@ function AppContent() {
       
   return (
     <>
-    {isLogged ? (
+    {(user!=undefined) ? (
           <Router>
           <Menu setMenuExpanded={setMenuExpanded} />
           <div className="page-content">
