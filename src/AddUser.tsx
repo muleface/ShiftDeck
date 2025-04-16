@@ -1,10 +1,8 @@
-import React, { useState, useContext } from 'react';
+import React, { useState} from 'react';
 import './AddUser.css';
-import { AppContext } from './AppContext';
-import { Intern, createIntern } from './API_Services/Models.tsx';
 import loginService from './API_Services/loginService.tsx';
+import { register } from './API_Services/authService.tsx';
 import internService from './API_Services/InternService.tsx';
-import bcrypt from 'bcryptjs'; // Import bcryptjs
 
 function AddUser() {
   const [firstName, setFirstName] = useState<string>("");
@@ -13,53 +11,53 @@ function AddUser() {
   const [password, setPassword] = useState<string>("");
   const [department, setDepartment] = useState<string>("");
   const [status, setStatus] = useState<number>(0);
-  const context = useContext(AppContext);
-  const [intern, setIntern] = useState<Intern>();
-
-  if (!context) {
-    throw new Error("useUserContext must be used within a UserContext.Provider");
-  }
 
   const handleSignup = () => {
     const nameRegex = /^[A-Za-z]+$/;
-
+  
     if (userName.trim() === "" || password.trim() === "") {
       alert("Username and password cannot be empty");
       return;
     }
-
+  
     if (!nameRegex.test(firstName)) {
       alert("First name must only contain letters");
       return;
     }
-
+  
     if (!nameRegex.test(lastName)) {
       alert("Last name must only contain letters");
       return;
     }
-
-    // Hash the password before sending to the backend
-    const hashedPassword = bcrypt.hashSync(password, 10); // Hashing the password
-
+  
     internService.addIntern(firstName, lastName, department)
       .then(data => {
-        setIntern(data); // Keep this if you're using intern elsewhere
-
-        // Send hashed password to the backend
-        loginService.addLogin({
-          username: userName,
-          userPassword: hashedPassword, // Store hashed password
-          id: data.id,
-          status: status
-        });
-
-        alert("Registered new Intern");
+        const internId = data.id;
+  
+        register(userName, password, internId)
+          .then(() => {
+            alert("Registered new Intern");
+            setFirstName("");
+            setLastName("");
+            setUserName("");
+            setPassword("");
+            setDepartment("");
+            setStatus(0);
+          })
+          .catch(error => {
+            console.error("User registration failed:", error);
+            alert("User registration failed");
+          });
+  
       })
       .catch(error => {
-        console.log("Database did not return an intern object, intern creation likely unsuccessful.");
+        console.error("Intern creation failed:", error);
+        alert("Intern creation failed");
       });
   };
 
+
+  
   return (
     <div className="signup-container">
       <h2>Signup</h2>
@@ -82,7 +80,7 @@ function AddUser() {
         onChange={(e) => setUserName(e.target.value)}
       />
       <input 
-        type="password" // Changed to "password" input type for security
+        type="password"
         placeholder="Choose Password" 
         value={password} 
         onChange={(e) => setPassword(e.target.value)}

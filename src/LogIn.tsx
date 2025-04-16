@@ -3,8 +3,16 @@ import './LogIn.css';
 import { AppContext } from "./AppContext";
 import loginService from './API_Services/loginService.tsx';
 import internService from './API_Services/InternService.tsx';
-import bcrypt from 'bcryptjs';
+import { login } from './API_Services/authService.tsx';
+import {jwtDecode} from 'jwt-decode';
+import axios from 'axios';
 
+interface JwtPayload {
+  internId: number;
+  sub: string; // username
+  exp: number;
+  id: string; // ASP.NET Identity user ID
+  }
 function LogIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -17,31 +25,38 @@ function LogIn() {
   const { setUser,setStatus } = userContext;
 
   const handleLogin = () => {
-    if (username.trim() !== "" &&password.trim() !== "") {
+    if (username.trim() !== "" && password.trim() !== "") {
       
-      const hashedPassword = bcrypt.hashSync(password, 10); // Hashing the password
+      login(username, password)
+  .then(token => {
+    const decoded: any = jwtDecode(token);
+    const internId = parseInt(decoded.internId);
 
-      loginService.login(username, hashedPassword)
-      .then(data => {
-        if(data){
-          internService.getInternById(data.id)
-          .then(data2 => {
-            setUser(data2);
-          })
+    if (!internId) {
+      alert("Login failed: Intern ID missing in token");
+      return;
+    }
+
+    internService.getInternById(internId)
+      .then(intern => {
+        setUser(intern);
+      });
+
+    localStorage.setItem("token", token);
+  })
         .catch(error => {
-          console.log("Database did not return an intern object.");
-          })
-          setStatus(data.status);
-        }
-      })
-      .catch(error => {
-        console.log("Database did not return an intern object, there is most like no intern with that name.");
-      })
-      
+          if (axios.isAxiosError(error)) {
+            console.error("Login failed:", error.response?.data || error.message);
+          } else {
+            console.error("Unexpected error:", error);
+          }
+          alert("Invalid username or password.");
+        });
     } else {
-      alert("Please enter a valid username");
+      alert("Please enter a valid username and password");
     }
   };
+  
 
   return (
     <div className="login-container">

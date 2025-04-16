@@ -18,15 +18,13 @@ export interface Login {
     username: string;
     userPassword: string;
     id: number;
-    status: number;
 }
 
-export function createLogin(username: string, userPassword: string, id: number, status: number) {
+export function createLogin(username: string, userPassword: string, id: number) {
     return {
         username,
         userPassword,
-        id,
-        status
+        id
     }
 }
 

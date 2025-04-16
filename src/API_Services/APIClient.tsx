@@ -44,7 +44,19 @@ api.interceptors.response.use(
         }
         return Promise.reject(error); //this tells the fetching functions that the request failed.
     }
+    
 )
+
+api.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem("jwt");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    error => Promise.reject(error)
+);
 
 export default api;
 

@@ -33,7 +33,7 @@ function Menu({ setMenuExpanded }: MenuProps) {
         <nav>
           <ul>
             <li><Link to="/"><button>Calendar</button></Link></li>
-            {(status!=0)?(<li><Link to="/adduser"><button>Add Intern</button></Link></li>):("")}
+            {(true)?(<li><Link to="/adduser"><button>Add Intern</button></Link></li>):("")}
             
             <SearchIntern/>
           </ul>

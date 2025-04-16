@@ -289,11 +289,7 @@ function Calendar() {
 
         <button 
           className="nav-button"
-<<<<<<< HEAD
-          onClick={nextMonth}>
-=======
           onClick={() => changeMonth(1)}>
->>>>>>> c6965ee20bdcb9c5e89a8d622ce1c93e533cc879
           Next
         </button>
       </div>

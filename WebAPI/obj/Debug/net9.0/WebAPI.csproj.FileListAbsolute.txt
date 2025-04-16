@@ -574,3 +574,9 @@ C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\refint\WebAPI.
 C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\WebAPI.pdb
 C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\WebAPI.genruntimeconfig.cache
 C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\ref\WebAPI.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\Microsoft.Extensions.Identity.Core.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\Microsoft.Extensions.Identity.Stores.dll

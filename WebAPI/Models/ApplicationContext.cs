@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace WebAPI.Models;
 
-public class ApplicationContext : DbContext 
+public class ApplicationContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) 
     {
@@ -13,11 +15,36 @@ public class ApplicationContext : DbContext
     public DbSet<Shift> ShiftsTable {get; set;} 
     public DbSet<Station> StationsTable {get; set;}
     public DbSet<StationRole> StationRolesTable {get; set;}
-    public DbSet<Login> LoginTable {get; set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) //sets a composite primary key (InternId, StationNum) for the StationRole object using fluent API
     {
-        
+        base.OnModelCreating(modelBuilder);
+
+            // Fix for PostgreSQL requiring explicit keys on Identity entities
+            modelBuilder.Entity<IdentityUserLogin<string>>(b =>
+            {
+                b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
+            });
+
+            modelBuilder.Entity<IdentityUserRole<string>>(b =>
+            {
+                b.HasKey(r => new { r.UserId, r.RoleId });
+            });
+
+            modelBuilder.Entity<IdentityUserToken<string>>(b =>
+            {
+                b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+            });
+
+            modelBuilder.Entity<IdentityUserClaim<string>>(b =>
+            {
+                b.HasKey(uc => uc.Id);
+            });
+
+            modelBuilder.Entity<IdentityRoleClaim<string>>(b =>
+            {
+                b.HasKey(rc => rc.Id);
+            });
         modelBuilder.Entity<StationRole>()
             .HasKey(sr => new { sr.InternId, sr.StationNum });
             
