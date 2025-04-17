@@ -13,7 +13,7 @@ function Menu({ setMenuExpanded }: MenuProps) {
   if (!userContext) {
     throw new Error("useUserContext must be used within a UserContext.Provider");
   }
-  const { user, setUser, status,setStatus, } = userContext;
+  const { user, setUser, userRole,setUserRole, } = userContext;
 
   const handleMouseEnter = () => {
     setMenuExpanded(true);
@@ -33,7 +33,9 @@ function Menu({ setMenuExpanded }: MenuProps) {
         <nav>
           <ul>
             <li><Link to="/"><button>Calendar</button></Link></li>
-            {(true)?(<li><Link to="/adduser"><button>Add Intern</button></Link></li>):("")}
+            {userRole === "Manager" && (
+              <li><Link to="/adduser"><button>Add Intern</button></Link></li>
+            )}
             
             <SearchIntern/>
           </ul>

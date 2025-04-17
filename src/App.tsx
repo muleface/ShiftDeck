@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Header from "./Header.tsx";
 import Footer from "./Footer.tsx";
@@ -10,6 +10,7 @@ import Calendar from "./Calendar.tsx";
 import UserInfo from "./UserInfo.tsx";
 import {AppProvider, AppContext} from './AppContext.tsx'
 import AddUser from "./AddUser.tsx";
+import InactivityHandler from "./InactivityHandler";
 
 function App () {
   return (
@@ -30,19 +31,21 @@ function AppContent() {
       menuExpanded, setMenuExpanded,
       searchedUser, setSearchedUser, 
       allInterns, setAllInterns, 
-      allStations, setAllStations } = context;
+      allStations, setAllStations, 
+    userRole} = context;
       
   return (
     <>
     {(user!=undefined) ? (
           <Router>
+          <InactivityHandler />
           <Menu setMenuExpanded={setMenuExpanded} />
           <div className="page-content">
             <Header />
             <Routes>
               <Route path="/" element={<Calendar />} />
               <Route path="/user" element={<UserInfo />} />
-              <Route path="/adduser" element={<AddUser />} />
+              <Route path="/adduser" element={userRole === "Manager" ? <AddUser /> : <Navigate to="/" />} />
             </Routes>
             <Footer />
           </div>

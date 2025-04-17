@@ -10,7 +10,7 @@ function AddUser() {
   const [userName, setUserName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [department, setDepartment] = useState<string>("");
-  const [status, setStatus] = useState<number>(0);
+  const [status, setStatus] = useState<string>("intern");
 
   const handleSignup = () => {
     const nameRegex = /^[A-Za-z]+$/;
@@ -34,7 +34,7 @@ function AddUser() {
       .then(data => {
         const internId = data.id;
   
-        register(userName, password, internId)
+        register(userName, password, internId, status)
           .then(() => {
             alert("Registered new Intern");
             setFirstName("");
@@ -42,7 +42,7 @@ function AddUser() {
             setUserName("");
             setPassword("");
             setDepartment("");
-            setStatus(0);
+            setStatus("Intern");
           })
           .catch(error => {
             console.error("User registration failed:", error);
@@ -91,9 +91,9 @@ function AddUser() {
         value={department} 
         onChange={(e) => setDepartment(e.target.value)}
       />
-      <select id="status" onChange={(e) => setStatus(parseInt(e.target.value))}>
-        <option value={0}>Intern</option>
-        <option value={1}>Manager</option>
+      <select id="status" onChange={(e) => setStatus(e.target.value)}>
+        <option value="Intern">Intern</option>
+        <option value="Manager">Manager</option>
       </select>
       <button onClick={handleSignup}>Sign Up</button>
     </div>

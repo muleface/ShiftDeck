@@ -14,8 +14,8 @@ interface AppContextType {
     user: Intern|undefined;
     setUser: (user:Intern|undefined) => void;
     
-    status:number;
-    setStatus: (status:number) => void;
+    userRole:string;
+    setUserRole: (userRole:string) => void;
 
     //interns-related variables
     allInterns: Intern[];
@@ -50,7 +50,7 @@ function ErrorPopUp(msg:string) { //handles the popup error, given a message.
 
 export function AppProvider({children}:{ children:React.ReactNode }) {
     // initial values to pass over to child components
-    const [status, setStatus] = useState<number>(0);
+    const [userRole, setUserRole] = useState<string>("Intern");
     const [user, setUser] = useState<Intern>();
     const [menuExpanded, setMenuExpanded] = useState(false);
     const [allInterns, setAllInterns] = useState<Intern[]>([]);
@@ -126,7 +126,7 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
           if (internId) {
             internService.getInternById(internId).then((intern) => {
               setUser(intern);
-              // optionally: setStatus(decoded.role or something, if stored)
+              setUserRole(decoded.role)
             });
           }
         } catch (error) {
@@ -137,10 +137,44 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
       }
     }, []);
 
+    interface DecodedToken {
+      internId: string;
+      exp: number;
+    }
+    
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+    
+      if (token) {
+        try {
+          const decoded = jwtDecode<DecodedToken>(token);
+          const currentTime = Date.now() / 1000;
+    
+          if (decoded.exp > currentTime) {
+            const internId = parseInt(decoded.internId);
+            internService.getInternById(internId)
+              .then(intern => setUser(intern))
+              .catch(() => {
+                localStorage.removeItem("token");
+                setUser(undefined);
+              });
+          } else {
+            // token expired
+            localStorage.removeItem("token");
+            setUser(undefined);
+          }
+        } catch (err) {
+          console.error("Invalid token:", err);
+          localStorage.removeItem("token");
+          setUser(undefined);
+        }
+      }
+    }, []);
+
     return (
       <AppContext.Provider value={ { 
                                 user, setUser,
-                                status, setStatus, 
+                                userRole, setUserRole, 
                                 menuExpanded, setMenuExpanded,
                                 allInterns, setAllInterns,
                                 allStations, setAllStations,

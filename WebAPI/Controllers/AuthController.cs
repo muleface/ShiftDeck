@@ -41,6 +41,16 @@ namespace WebAPI.Controllers
                 return BadRequest(result.Errors);
             }
 
+            // ✅ Add this part: Assign the user to a role
+            if (!string.IsNullOrEmpty(request.Role))
+            {
+                var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
+                if (!roleResult.Succeeded)
+                {
+                    return BadRequest(roleResult.Errors);
+                }
+            }
+
             return Ok("User registered successfully");
         }
 
@@ -48,22 +58,27 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Login(LoginRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
-            if (user == null) return Unauthorized("Invalid username or password");
+            if (user == null)
+                return Unauthorized("Invalid username or password");
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-            if (!result.Succeeded) return Unauthorized("Invalid username or password");
+            if (!result.Succeeded)
+                return Unauthorized("Invalid username or password");
 
-            var token = GenerateJwtToken(user);
+            var token = await GenerateJwtToken(user);
             return Ok(new { token });
         }
 
-        private string GenerateJwtToken(ApplicationUser user)
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
-            var claims = new[]
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim("id", user.Id),
                 new Claim("internId", user.InternId.ToString()),
+                new Claim("role", roles.FirstOrDefault() ?? "Intern") // assuming single role
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -76,6 +91,7 @@ namespace WebAPI.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 
     public class RegisterRequest
@@ -83,6 +99,7 @@ namespace WebAPI.Controllers
         public string UserName { get; set; }
         public string Password { get; set; }
         public int InternId { get; set; }
+        public string Role { get; set; }
     }
 
     public class LoginRequest

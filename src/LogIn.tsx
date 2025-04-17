@@ -11,7 +11,8 @@ interface JwtPayload {
   sub: string; // username
   exp: number;
   id: string; // ASP.NET Identity user ID
-  }
+  role: string; // "Intern" or "Manager"
+}
 function LogIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +22,7 @@ function LogIn() {
     throw new Error("useUserContext must be used within a UserContext.Provider");
   }
 
-  const { setUser,setStatus } = userContext;
+  const { setUser,setUserRole } = userContext;
 
   const handleLogin = async () => {
     if (username.trim() === "" || password.trim() === "") {
@@ -37,17 +38,20 @@ function LogIn() {
       localStorage.setItem("token", token);
   
       // 3. Decode the token to extract user info (like internId)
-      const decoded: any = jwtDecode(token);
-      const internId = parseInt(decoded.internId);
+
+      const decoded: JwtPayload = jwtDecode(token);
+      const internId = parseInt(decoded.internId.toString());
   
-      if (!internId) {
-        alert("Login failed: Intern ID missing in token");
+      if (!internId || !decoded.role) {
+        alert("Login failed: missing intern ID or role in token");
         return;
       }
   
       // 4. Fetch intern info from backend using internId
       const intern = await internService.getInternById(internId);
       setUser(intern); // save the logged-in user's info (likely to context or state)
+
+      setUserRole(decoded.role);
       
       // Optional: redirect or navigate to a protected page after login
       // navigate('/dashboard'); <-- if using React Router

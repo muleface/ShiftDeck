@@ -52,7 +52,7 @@ function Calendar() {
     throw new Error("AppContext must be available");
   }
   
-  const { allInterns, allStations, stationRoles, jsConstraints } = context;
+  const { allInterns, allStations, stationRoles, jsConstraints, userRole } = context;
   
   if (!allInterns || !allStations) {
     throw new Error("allInterns and allStations must be available in AppContext");
@@ -276,21 +276,23 @@ function Calendar() {
   
   // Toggle dropdown for assigning interns
   const toggleDropdown = (dayIndex: number, stationNum: number, event: React.MouseEvent) => {
+    if (userRole !== 'Manager') return;
+  
     const cell = event.currentTarget as HTMLElement;
-    
-    if (activeDropdown && 
-        activeDropdown.dayIndex === dayIndex && 
-        activeDropdown.stationNum === stationNum) {
+  
+    if (
+      activeDropdown &&
+      activeDropdown.dayIndex === dayIndex &&
+      activeDropdown.stationNum === stationNum
+    ) {
       setActiveDropdown(null);
       setReferenceElement(null);
       setSearchTerm('');
     } else {
-      // Close existing dropdown before opening a new one
       if (activeDropdown) {
         setActiveDropdown(null);
         setReferenceElement(null);
-        
-        // Small delay to ensure clean transition
+  
         setTimeout(() => {
           setActiveDropdown({ dayIndex, stationNum });
           setReferenceElement(cell);
@@ -320,6 +322,7 @@ function Calendar() {
   
   // Assign an intern to a specific day and station
   const assignIntern = (dayIndex: number, stationNum: number, intern: Intern | null) => {
+    if (userRole !== 'Manager') return;
     const day = calendarDays[dayIndex];
     if (!day) return;
     
