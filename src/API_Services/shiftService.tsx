@@ -1,5 +1,5 @@
 import api from './APIClient.tsx'
-import {Shift, createShift} from './Models.tsx'
+import {Shift, createShift, fauxShift} from './Models.tsx'
 
 const BASE_URL = '/Shifts';
 
@@ -28,7 +28,7 @@ const shiftService = {
         const response = await api.get<Shift[]>(`${BASE_URL}/GetShiftsByInternId/${id}`);
         return response.data;
     },
-    addShift: async(newShift: Shift): Promise<Shift> => {
+    addShift: async(newShift: fauxShift): Promise<Shift> => {
         const localShiftDate = new Date(newShift.shiftDate);
         
         // Ensure the date is set at midnight in LOCAL time

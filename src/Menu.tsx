@@ -1,12 +1,20 @@
 import { Link } from 'react-router-dom';
+import { useState, useContext } from 'react';
 import './Menu.css';
 import SearchIntern from './SearchIntern';
+import { AppContext } from "./AppContext";
 
 interface MenuProps {
   setMenuExpanded:  (expanded:boolean) => void;
 }
 
 function Menu({ setMenuExpanded }: MenuProps) {
+  const userContext = useContext(AppContext);
+  if (!userContext) {
+    throw new Error("useUserContext must be used within a UserContext.Provider");
+  }
+  const { user, setUser, status,setStatus, } = userContext;
+
   const handleMouseEnter = () => {
     setMenuExpanded(true);
   };
@@ -25,11 +33,18 @@ function Menu({ setMenuExpanded }: MenuProps) {
         <nav>
           <ul>
             <li><Link to="/"><button>Calendar</button></Link></li>
-            <li><button>add worker</button></li>
+            {(true)?(<li><Link to="/adduser"><button>Add Intern</button></Link></li>):("")}
+            
             <SearchIntern/>
           </ul>
         </nav>
       </div>
+      <button className="signout" onClick={() => {
+        localStorage.removeItem("token");
+        setUser(undefined);
+        }}>
+          Sign Out
+      </button>
     </div>
   );
 }

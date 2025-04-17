@@ -1,7 +1,7 @@
 /* General styles */
 body {
   margin: 0;
-  padding: 0;
+  padding: 2rem;
   background-color: hsl(17, 100%, 80%);
   text-align: center;
   overflow-x: hidden; /* Prevent horizontal scroll when moving content */
@@ -12,16 +12,17 @@ body {
   position: relative;
   transition: transform 0.3s ease-in-out;
   padding: 2rem;
+  transform: translateX(-2rem);
 }
 
 /* When the menu expands, shift the page smoothly */
 .page-content.menu-expanded {
-  transform: translateX(-30%);
+  transform: translateX(-20%);
 }
 
 /* Default small shift when menu is closed */
 .page-content.menu-closed {
-  transform: translateX(-60px);
+  transform: translateX(-2rem);
 }
 
 /* Fix header/footer spacing */

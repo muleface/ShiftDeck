@@ -1,0 +1,103 @@
+.dropdown-container {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  animation-timing-function: ease-out;
+}
+
+/* Animation for dropdown appearing from bottom */
+.dropdown-container[data-placement="bottom"] {
+  animation-name: fadeInUp;
+  transform-origin: top center;
+}
+
+/* Animation for dropdown appearing from top */
+.dropdown-container[data-placement="top"] {
+  animation-name: fadeInDown;
+  transform-origin: bottom center;
+}
+
+/* Animation for dropdown disappearing */
+.dropdown-container.closing {
+  animation-name: fadeOut;
+  pointer-events: none; /* Prevent interactions during fade-out */
+}
+
+/* Custom arrow styling */
+.dropdown-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: white;
+  transform: rotate(45deg);
+  z-index: 1001;
+}
+
+/* Arrow border for different placements */
+.dropdown-container[data-placement="top"] .dropdown-arrow {
+  border-right: 1px solid #d1d5db;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.dropdown-container[data-placement="bottom"] .dropdown-arrow {
+  border-left: 1px solid #d1d5db;
+  border-top: 1px solid #d1d5db;
+}
+
+.search-input {
+  width: calc(100% - 1rem);
+  padding: 0.5rem;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  outline: none;
+  margin: 0;
+}
+
+.dropdown-item {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+/* Define animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}

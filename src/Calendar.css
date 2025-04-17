@@ -1,11 +1,16 @@
-
 .calendar-container {
-  padding: 1.5rem;
-  max-width: 72rem;
+  padding: 1.5rem 1.5rem 1.5rem;
+  max-width: 95%;
   margin: 0 auto;
   background-color: #f3f4f6;
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  position: relative;
+  max-height: calc(100vh - 10rem); /* Leave room for header/footer */
+  display: flex;
+  flex-direction: column;
+  text-align:center;
 }
 
 .calendar-header {
@@ -35,106 +40,180 @@
   color: #1f2937;
 }
 
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  margin: 0 -0.75rem; /* Negative margin to allow for overlap */
-  padding: 0 0.75rem; /* Padding to prevent cut-off of popped out cards */
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 3.5rem;
 }
 
-.day-card {
+.calendar-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing:0;
+  table-layout: fixed;
+}
+
+.calendar-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #e5e7eb;
+}
+
+.calendar-table th {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  background-color: #e5e7eb;
+  font-weight: bold;
+  border: 1px solid #adadad;
   position: relative;
-  height: 8rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: all 0.2s;
-  cursor: pointer;
-  z-index: 1;
-}
-
-.day-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  transform: translateY(2rem) translateX(1.5rem) scale(1.5); /*use the translates to control the expansion direction */
+  top: 0;
   z-index: 10;
 }
 
-.current-month {
-  background-color: white;
-}
-
-.other-month {
-  background-color: #f3f4f6;
-  opacity: 0.5;
-}
-
-.day-content {
-  padding: 0.5rem;
-}
-
-.day-header-combined {
-  font-size: 0.875rem;
-  font-weight: bold;
+.calendar-table td {
   padding: 0.375rem 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #f9fafb;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-  font-family: monospace;
+  border: 1px solid #d1d5db;
+  vertical-align: middle;
+  height: 2.25rem;
 }
 
-.weekend-header {
-  background-color: #a2a0ef;
-}
-.assigned-header {
-  background-color: red;
-}
-.weekend-assigned-header {
-  background-color: #efa0a0;
+.weekend-row {
+  background-color: #e0f2fe;
 }
 
-.assignment-container {
-  padding: 0.5rem;
-  margin-top: 0.5rem;
+.date-cell {
+  font-weight: bold;
+  text-align: center;
+  width: 80px;
 }
 
-.assigned-person {
+.day-name-cell {
+  width: 100px;
+  text-align: left;
+}
+
+.station-cell {
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.intern-name {
+  width: 100%;
+  text-align: center;
+}
+
+.empty-cell {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.existing-shift {
+  background-color: #dcfce7;
+  color: #166534;
+  transition: background-color 0.3s ease;
+}
+
+.pending-shift {
   background-color: #dbeafe;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
   color: #1e40af;
-  font-size: 0.875rem;
+  transition: background-color 0.3s ease;
 }
 
-.hover-overlay {
-  display: none;
+.dropdown-container {
   position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
+  width: 100%;
+  left: 0;
+  top: 100%;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 50;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.day-card:hover .hover-overlay {
-  display: block;
+.search-input {
+  width: calc(100% - 1rem);
+  padding: 0.5rem;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  outline: none;
+  margin: 0;
 }
 
-.person-selector {
+.dropdown-item {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+.pending-change {
+  border: 2px solid #3b82f6;
+}
+
+.save-button-container {
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
-  background-color: white;
-  padding: 0.5rem;
-  border-top: 1px solid #e5e7eb;
-  border-bottom-left-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-}
-
-.person-dropdown {
   width: 100%;
-  padding: 0.25rem;
-  font-size: 0.875rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.25rem;
+  background-color: #f3f4f6;
+  padding: 0.75rem 0;
+  border-top: 1px solid #d1d5db;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  
 }
 
+.save-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.save-button:hover {
+  background-color: #3b9c3f;
+}
+
+.save-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Styling for invalid shifts */
+.invalid-shift {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  transition: background-color 0.3s ease;
+  border: 2px solid #dc2626;
+}
+
+.invalid-shift:hover {
+  background-color: #fecaca;
+}
+
+/* Override priority - invalid state should take precedence */
+.pending-shift.invalid-shift {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 2px solid #dc2626;
+}
+
+.existing-shift.invalid-shift {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 2px solid #dc2626;
+}

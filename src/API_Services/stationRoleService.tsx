@@ -30,3 +30,5 @@ const stationRoleService = {
         return response.data;
     }
 }
+
+export default stationRoleService;

@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import {createPortal} from 'react-dom';
 import './AppContext.module.css';
-import {Intern, createIntern, Shift, createShift, Station, StationRole, createStationRole} from './API_Services/Models.tsx';
+import {Intern, createIntern, Shift, createShift, Station, StationRole, createStationRole, JSConstraint} from './API_Services/Models.tsx';
 import internService from './API_Services/internService.tsx';
 import shiftService from './API_Services/shiftService.tsx';
 import stationService from './API_Services/stationService.tsx';
-
+import stationRoleService from './API_Services/stationRoleService.tsx';
+import {jwtDecode} from 'jwt-decode';
+import JSConstraintService from './API_Services/JSConstraintService.tsx';
 
 interface AppContextType {
     //user-related variables
-    user: string;
-    setUser: (user:string) => void; //just defining the function, idk about dispatches.
-    isLogged: boolean;
-    setIsLogged: (isLogged:boolean) => void;
+    user: Intern|undefined;
+    setUser: (user:Intern|undefined) => void;
+    
+    status:number;
+    setStatus: (status:number) => void;
 
     //interns-related variables
     allInterns: Intern[];
@@ -23,6 +26,12 @@ interface AppContextType {
     //stations-related variables
     allStations:Station[];
     setAllStations: (stations:Station[]) => void;
+
+    //NEW: station roles and constraints
+    stationRoles: StationRole[];
+    setStationRoles: (roles:StationRole[]) => void;
+    jsConstraints: JSConstraint[];
+    setJsConstraints: (constraints:JSConstraint[]) => void;
 
     //menu-related variables
     menuExpanded:boolean,
@@ -41,15 +50,20 @@ function ErrorPopUp(msg:string) { //handles the popup error, given a message.
 
 export function AppProvider({children}:{ children:React.ReactNode }) {
     // initial values to pass over to child components
-    const [isLogged, setIsLogged] = useState(false);
-    const [user, setUser] = useState("");
+    const [status, setStatus] = useState<number>(0);
+    const [user, setUser] = useState<Intern>();
     const [menuExpanded, setMenuExpanded] = useState(false);
     const [allInterns, setAllInterns] = useState<Intern[]>([]);
     const [allStations, setAllStations] = useState<Station[]>([]);
     const [searchedUser, setSearchedUser] = useState<number>(0);
+    
+    // NEW: state for station roles and constraints
+    const [stationRoles, setStationRoles] = useState<StationRole[]>([]);
+    const [jsConstraints, setJsConstraints] = useState<JSConstraint[]>([]);
 
-    //Fetching the interns list with every mount
+    //Fetching data with every mount
     useEffect(() => {
+        // Existing data fetching
         internService.getAllInterns()
           .then(data => {
             setAllInterns(data);
@@ -58,6 +72,7 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
             console.error('Error fetching all interns:', err)
             ErrorPopUp("Error fetching interns. Please refresh the page.")
           });
+          
         stationService.getAllStations()
           .then(data => {
             setAllStations(data);
@@ -65,7 +80,27 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
           .catch(err => {
             console.error('Error fetching all stations:', err);
             ErrorPopUp("Error fetching stations. Please refresh the page.");
+          });
+          
+        // NEW: Fetch station roles
+        stationRoleService.getAllRoles()
+          .then(data => {
+            setStationRoles(data);
           })
+          .catch(err => {
+            console.error('Error fetching station roles:', err);
+            ErrorPopUp("Error fetching station roles. Please refresh the page.");
+          });
+          
+        // NEW: Fetch JS constraints
+        JSConstraintService.getAllConstraints()
+          .then(data => {
+            setJsConstraints(data);
+          })
+          .catch(err => {
+            console.error('Error fetching JS constraints:', err);
+            ErrorPopUp("Error fetching JS constraints. Please refresh the page.");
+          });
       }, []);
     
     //expanding or closing the side navbar
@@ -82,14 +117,41 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
     }
     }, [menuExpanded]);
 
-    return (<AppContext.Provider value={ {isLogged, setIsLogged, 
-                                user, setUser, 
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const decoded: any = jwtDecode(token);
+          const internId = parseInt(decoded.internId);
+          if (internId) {
+            internService.getInternById(internId).then((intern) => {
+              setUser(intern);
+              // optionally: setStatus(decoded.role or something, if stored)
+            });
+          }
+        } catch (error) {
+          console.error("Invalid token. Logging out.");
+          localStorage.removeItem("token");
+          setUser(undefined);
+        }
+      }
+    }, []);
+
+    return (
+      <AppContext.Provider value={ { 
+                                user, setUser,
+                                status, setStatus, 
                                 menuExpanded, setMenuExpanded,
                                 allInterns, setAllInterns,
                                 allStations, setAllStations,
-                                searchedUser, setSearchedUser}}>
+                                searchedUser, setSearchedUser,
+                                // NEW: Added station roles and constraints
+                                stationRoles, setStationRoles,
+                                jsConstraints, setJsConstraints
+                              }}>
             { children }
-            </AppContext.Provider>);
+      </AppContext.Provider>
+    );
 }
 
 

@@ -55,6 +55,20 @@ namespace WebAPI.Controllers
 
             return interns;
         }
+        // POST: api/intern
+        [HttpPost]  
+        public async Task<ActionResult<Intern>> AddIntern(Intern intern)
+        {
+            if (intern == null)
+            {
+                return BadRequest("Invalid intern data.");
+            }
+
+            _context.InternsTable.Add(intern);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetInternById), new { Id = intern.Id }, intern);
+        }
 
         
     }

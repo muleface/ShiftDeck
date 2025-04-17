@@ -7,9 +7,9 @@ import LogIn from "./LogIn.tsx";
 import SearchIntern from "./SearchIntern.tsx";
 import Menu from "./Menu.tsx";
 import Calendar from "./Calendar.tsx";
-import HomePage from "./HomePage.tsx";
 import UserInfo from "./UserInfo.tsx";
 import {AppProvider, AppContext} from './AppContext.tsx'
+import AddUser from "./AddUser.tsx";
 
 function App () {
   return (
@@ -24,7 +24,8 @@ function AppContent() {
     if (!context)
       throw new Error("Fatal error - context failed to load.");
 
-    const { isLogged, setIsLogged,
+    const {
+      
       user, setUser,
       menuExpanded, setMenuExpanded,
       searchedUser, setSearchedUser, 
@@ -33,7 +34,7 @@ function AppContent() {
       
   return (
     <>
-    {isLogged ? (
+    {(user!=undefined) ? (
           <Router>
           <Menu setMenuExpanded={setMenuExpanded} />
           <div className="page-content">
@@ -41,6 +42,7 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<Calendar />} />
               <Route path="/user" element={<UserInfo />} />
+              <Route path="/adduser" element={<AddUser />} />
             </Routes>
             <Footer />
           </div>

@@ -5,22 +5,6 @@ function Header(){
             <h1> Shift Deck </h1>
             
             <hr></hr>
-            {/*
-      {isLogged ? (
-        <>
-        
-          <Header />
-
-          <p>hello {user}</p>
-          
-          <Footer />
-        </>
-      ) : (
-        <UserContext.Provider value={{user, setUser, isLogged, setIsLogged}}>
-          <LogIn />
-        </UserContext.Provider>
-      )}
-        */}
         </header>
         
     );

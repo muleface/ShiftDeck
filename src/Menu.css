@@ -17,7 +17,7 @@
   
   /* Expand menu on hover */
   .menu:hover {
-    width: 30%;
+    width: 20%;
   }
   
   /* Fix menu content visibility issues */
@@ -70,4 +70,64 @@
     text-decoration: none;
     color: inherit;
   }
+  
+  .signout {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out;
+    width: 20%;
+    padding: 10px;
+    background-color: red;
+    position: absolute;
+    bottom: 10%;
+    border-radius: 20px;
+  }
+  .signout:hover {
+    background-color: hsl(0, 100%, 40%);
+  }
+  .menu:hover .signout {
+    opacity: 1;
+    visibility: visible;
+  }
+
+
+  .Search-container {
+    width: 100%;
+  }
+  
+  .filtered-list {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+  
+  .filtered-list ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  .filtered-list li {
+    padding: 8px 0;
+  }
+
+  .filtered-list li:hover {
+    background-color: #111;
+  }
+  
+  .filtered-list a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  /* Optional: styled scrollbar */
+  .filtered-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .filtered-list::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 3px;
+  }
+  
   

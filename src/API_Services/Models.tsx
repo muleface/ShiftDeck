@@ -14,6 +14,20 @@ export function createIntern(id:number, firstName:string, lastName:string, depar
     }
 }
 
+export interface Login {
+    username: string;
+    userPassword: string;
+    id: number;
+}
+
+export function createLogin(username: string, userPassword: string, id: number) {
+    return {
+        username,
+        userPassword,
+        id
+    }
+}
+
 export interface Shift {
     id: number;
     internId: number;
@@ -29,6 +43,21 @@ export function createShift(id:number, internId:number, shiftDate:Date, stationN
     stationNum
    }
 }
+
+export interface fauxShift {
+    internId: number;
+    shiftDate: Date;
+    stationNum: number;
+}
+
+export function createFauxShift(intern:number, date:Date, station:number) {
+    return {
+        internId:intern,
+        shiftDate:date,
+        stationNum:station
+      };
+}
+
 
 export interface Station {
     stationNum: number;
@@ -47,5 +76,11 @@ export function createStationRole(internId:number, stationNum:number, role:numbe
         stationNum,
         role
     }
+}
+
+export interface JSConstraint {
+    id: number,
+    juniorStation: number,
+    seniorStation: number,
 }
 
