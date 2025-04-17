@@ -74,8 +74,11 @@ const InternDropdown: React.FC<InternDropdownProps> = ({
         cellRect.top < tableRect.top;
       
       if (isOutsideBounds) {
-        setDropdownState(state => ({ ...state, isVisible: false }));
-        handleClose();
+        // Only update state if visibility changes
+        if (dropdownState.isVisible) {
+          setDropdownState(state => ({ ...state, isVisible: false }));
+          handleClose();
+        }
         return;
       }
       
@@ -84,11 +87,14 @@ const InternDropdown: React.FC<InternDropdownProps> = ({
       const estimatedHeight = Math.min(35 + filteredInterns.length * 35, 200);
       const placement = spaceBelow < estimatedHeight ? 'top' : 'bottom';
       
-      setDropdownState(state => ({ 
-        ...state, 
-        isVisible: true,
-        placement
-      }));
+      // Only update state if values actually changed
+      if (!dropdownState.isVisible || dropdownState.placement !== placement) {
+        setDropdownState(state => ({ 
+          ...state, 
+          isVisible: true,
+          placement
+        }));
+      }
     };
     
     // Initial position check
@@ -101,7 +107,7 @@ const InternDropdown: React.FC<InternDropdownProps> = ({
     return () => {
       container.removeEventListener('scroll', updatePosition);
     };
-  }, [isOpen, dropdownState.isClosing, referenceElement, tableContainerRef, filteredInterns.length, handleClose]);
+  }, [isOpen, dropdownState.isClosing, referenceElement, tableContainerRef, filteredInterns.length, handleClose, dropdownState.isVisible, dropdownState.placement]);
   
   // Set up Floating UI
   const {

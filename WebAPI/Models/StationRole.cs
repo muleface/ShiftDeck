@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace WebAPI.Models;
 
-[Table("stations_roles")]
+[Table("station_roles")]
 public class StationRole { 
 
     [Column("intern_id")]
