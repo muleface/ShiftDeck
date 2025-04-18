@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import './Calendar.css';
-import { AppContext } from './AppContext.tsx';
-import { Intern, Shift, Station, createFauxShift, fauxShift, StationRole, JSConstraint } from './API_Services/Models.tsx';
-import shiftService from './API_Services/shiftService.tsx';
+import { AppContext } from '../AppContext';
+import { Intern, Shift, createFauxShift, fauxShift } from '../API_Services/Models';
+import shiftService from '../API_Services/shiftService';
 import InternDropdown from './InternDropdown';
+import CalendarHeader from './CalendarHeader';
+import CalendarTable from './CalendarTable';
 
 interface CalendarDay {
   date: Date;
-  assignments: {
-    [stationNum: number]: Intern | null;
-  };
+  assignments: { [stationNum: number]: Intern | null };
   isWeekend: boolean;
 }
 
@@ -31,16 +31,22 @@ function Calendar() {
   const [allShifts, setAllShifts] = useState<Shift[]>([]);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   
-  // New state for validation
-  const [validationResults, setValidationResults] = useState<{ [dayIndex: number]: DayValidationResult }>({});
+  // For mapping pending changes to a format easy to pass to child components
+  const [pendingChangesByDay, setPendingChangesByDay] = useState<{
+    [dayIndex: number]: { [stationNum: number]: boolean }
+  }>({});
   
-  // Dropdown state
+  // Validation results for each day
+  const [validationResults, setValidationResults] = useState<{ 
+    [dayIndex: number]: DayValidationResult 
+  }>({});
+  
+  // Simplified dropdown state
   const [activeDropdown, setActiveDropdown] = useState<{
     dayIndex: number, 
     stationNum: number
   } | null>(null);
-  const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [dropdownElement, setDropdownElement] = useState<HTMLElement | null>(null);
   
   // Ref for table container
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -71,6 +77,30 @@ function Calendar() {
     
     fetchShifts();
   }, []);
+  
+  // Reset dropdown when changing month
+  useEffect(() => {
+    setActiveDropdown(null);
+    setDropdownElement(null);
+  }, [currentDate]);
+  
+  // Close dropdown when table is scrolled
+  useEffect(() => {
+    if (activeDropdown && tableContainerRef.current) {
+      const handleScroll = () => {
+        // Close dropdown when table is scrolled
+        handleCloseDropdown();
+      };
+      
+      tableContainerRef.current.addEventListener('scroll', handleScroll);
+      
+      return () => {
+        if (tableContainerRef.current) {
+          tableContainerRef.current.removeEventListener('scroll', handleScroll);
+        }
+      };
+    }
+  }, [activeDropdown]);
   
   // Generate calendar days for the current month
   useEffect(() => {
@@ -133,6 +163,29 @@ function Calendar() {
     setCalendarDays(days);
   }, [currentDate, allShifts, allInterns, pendingChanges, allStations]);
   
+  // Transform pendingChanges array into a map for easier use in child components
+  useEffect(() => {
+    const pendingMap: { [dayIndex: number]: { [stationNum: number]: boolean } } = {};
+    
+    pendingChanges.forEach(change => {
+      const changeDate = new Date(change.shiftDate);
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      if (changeDate.getMonth() === month && changeDate.getFullYear() === year) {
+        const dayIndex = changeDate.getDate() - 1;
+        
+        if (!pendingMap[dayIndex]) {
+          pendingMap[dayIndex] = {};
+        }
+        
+        pendingMap[dayIndex][change.stationNum] = true;
+      }
+    });
+    
+    setPendingChangesByDay(pendingMap);
+  }, [pendingChanges, currentDate]);
+  
   // Validate the calendar days whenever they change
   useEffect(() => {
     if (!stationRoles || !jsConstraints) return;
@@ -144,18 +197,119 @@ function Calendar() {
       const previousDay = dayIndex > 0 ? calendarDays[dayIndex - 1] : null;
       
       // Run validation
-      const result = validateDay(day, previousDay, dayIndex);
+      const result = validateDay(day, previousDay);
       newValidationResults[dayIndex] = result;
     });
     
     setValidationResults(newValidationResults);
   }, [calendarDays, stationRoles, jsConstraints]);
   
+  // Navigation functions
+  const handleChangeMonth = (delta: number) => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setMonth(newDate.getMonth() + delta);
+      return newDate;
+    });
+  };
+  
+  // Helper function to compare dates (ignoring time)
+  const isSameDay = (date1: Date, date2: Date) => {
+    return date1.toDateString() === date2.toDateString();
+  };
+  
+  // Toggle dropdown for assigning interns - simplified
+  const handleCellClick = (dayIndex: number, stationNum: number, event: React.MouseEvent) => {
+    if (userRole !== 'Manager') return;
+  
+    const cell = event.currentTarget as HTMLElement;
+  
+    if (
+      activeDropdown &&
+      activeDropdown.dayIndex === dayIndex &&
+      activeDropdown.stationNum === stationNum
+    ) {
+      setActiveDropdown(null);
+      setDropdownElement(null);
+    } else {
+      if (activeDropdown) {
+        setActiveDropdown(null);
+        setDropdownElement(null);
+  
+        setTimeout(() => {
+          setActiveDropdown({ dayIndex, stationNum });
+          setDropdownElement(cell);
+        }, 10);
+      } else {
+        setActiveDropdown({ dayIndex, stationNum });
+        setDropdownElement(cell);
+      }
+    }
+  };
+  
+  // Handle intern selection from dropdown
+  const handleInternSelect = (intern: Intern | null, dayIndex: number, stationNum: number) => {
+    assignIntern(dayIndex, stationNum, intern);
+  };
+  
+  // Close the dropdown
+  const handleCloseDropdown = () => {
+    setActiveDropdown(null);
+    setDropdownElement(null);
+  };
+  
+  // Assign an intern to a specific day and station
+  const assignIntern = (dayIndex: number, stationNum: number, intern: Intern | null) => {
+    if (userRole !== 'Manager') return;
+    const day = calendarDays[dayIndex];
+    if (!day) return;
+    
+    // Update calendar days immediately for visual feedback
+    setCalendarDays(prevDays => {
+      const updatedDays = [...prevDays];
+      if (!updatedDays[dayIndex].assignments) {
+        updatedDays[dayIndex].assignments = {};
+      }
+      updatedDays[dayIndex].assignments[stationNum] = intern;
+      return updatedDays;
+    });
+    
+    if (intern) {
+      const newShift = createFauxShift(intern.id, day.date, stationNum);
+      
+      setPendingChanges(prevChanges => {
+        // Check if we already have a pending shift for this date and station
+        const existingIndex = prevChanges.findIndex(shift => 
+          isSameDay(new Date(shift.shiftDate), day.date) && 
+          shift.stationNum === stationNum
+        );
+        
+        if (existingIndex >= 0) {
+          // Replace the existing shift
+          const newPendingChanges = [...prevChanges];
+          newPendingChanges[existingIndex] = newShift;
+          return newPendingChanges;
+        } else {
+          // Add a new shift
+          return [...prevChanges, newShift];
+        }
+      });
+    } else {
+      // If intern is null (unassigning), remove any pending shift for this date and station
+      setPendingChanges(prevChanges => prevChanges.filter(shift => 
+        !(isSameDay(new Date(shift.shiftDate), day.date) && shift.stationNum === stationNum)
+      ));
+    }
+    
+    // Close dropdown after selection
+    setActiveDropdown(null);
+    setDropdownElement(null);
+  };
+  
   // Function to validate a single day's schedule
   const validateDay = (
     currentDay: CalendarDay, 
-    previousDay: CalendarDay | null,
-    dayIndex: number
+    previousDay: CalendarDay | null
   ): DayValidationResult => {
     const result: DayValidationResult = {
       isValid: true,
@@ -245,135 +399,6 @@ function Calendar() {
     return result;
   };
   
-  // Close dropdown when changing month
-  useEffect(() => {
-    setActiveDropdown(null);
-    setReferenceElement(null);
-    setSearchTerm('');
-  }, [currentDate]);
-  
-  // Navigation functions
-  const changeMonth = (delta: number) => {
-    setCurrentDate(prevDate => {
-      const newDate = new Date(prevDate);
-      newDate.setMonth(newDate.getMonth() + delta);
-      return newDate;
-    });
-  };
-  
-  // Format date as DD/MM
-  const formatDate = (date: Date) => {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    return `${day}/${month}`;
-  };
-  
-  // Get day name
-  const getDayName = (date: Date) => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return days[date.getDay()];
-  };
-  
-  // Toggle dropdown for assigning interns
-  const toggleDropdown = (dayIndex: number, stationNum: number, event: React.MouseEvent) => {
-    if (userRole !== 'Manager') return;
-  
-    const cell = event.currentTarget as HTMLElement;
-  
-    if (
-      activeDropdown &&
-      activeDropdown.dayIndex === dayIndex &&
-      activeDropdown.stationNum === stationNum
-    ) {
-      setActiveDropdown(null);
-      setReferenceElement(null);
-      setSearchTerm('');
-    } else {
-      if (activeDropdown) {
-        setActiveDropdown(null);
-        setReferenceElement(null);
-  
-        setTimeout(() => {
-          setActiveDropdown({ dayIndex, stationNum });
-          setReferenceElement(cell);
-          setSearchTerm('');
-        }, 10);
-      } else {
-        setActiveDropdown({ dayIndex, stationNum });
-        setReferenceElement(cell);
-        setSearchTerm('');
-      }
-    }
-  };
-  
-  // Handle intern selection from dropdown
-  const handleInternSelect = (intern: Intern | null) => {
-    if (activeDropdown) {
-      assignIntern(activeDropdown.dayIndex, activeDropdown.stationNum, intern);
-    }
-  };
-  
-  // Close the dropdown
-  const handleCloseDropdown = () => {
-    setActiveDropdown(null);
-    setReferenceElement(null);
-    setSearchTerm('');
-  };
-  
-  // Assign an intern to a specific day and station
-  const assignIntern = (dayIndex: number, stationNum: number, intern: Intern | null) => {
-    if (userRole !== 'Manager') return;
-    const day = calendarDays[dayIndex];
-    if (!day) return;
-    
-    // Update calendar days immediately for visual feedback
-    setCalendarDays(prevDays => {
-      const updatedDays = [...prevDays];
-      if (!updatedDays[dayIndex].assignments) {
-        updatedDays[dayIndex].assignments = {};
-      }
-      updatedDays[dayIndex].assignments[stationNum] = intern;
-      return updatedDays;
-    });
-    
-    if (intern) {
-      const newShift = createFauxShift(intern.id, day.date, stationNum);
-      
-      setPendingChanges(prevChanges => {
-        // Check if we already have a pending shift for this date and station
-        const existingIndex = prevChanges.findIndex(shift => 
-          isSameDay(new Date(shift.shiftDate), day.date) && 
-          shift.stationNum === stationNum
-        );
-        
-        if (existingIndex >= 0) {
-          // Replace the existing shift
-          const newPendingChanges = [...prevChanges];
-          newPendingChanges[existingIndex] = newShift;
-          return newPendingChanges;
-        } else {
-          // Add a new shift
-          return [...prevChanges, newShift];
-        }
-      });
-    } else {
-      // If intern is null (unassigning), remove any pending shift for this date and station
-      setPendingChanges(prevChanges => prevChanges.filter(shift => 
-        !(isSameDay(new Date(shift.shiftDate), day.date) && shift.stationNum === stationNum)
-      ));
-    }
-    
-    // Close dropdown after selection
-    setActiveDropdown(null);
-    setReferenceElement(null);
-    setSearchTerm('');
-  };
-  
-  // Helper function to compare dates (ignoring time)
-  const isSameDay = (date1: Date, date2: Date) => {
-    return date1.toDateString() === date2.toDateString();
-  };
-  
   // Save pending changes to the server
   const saveShiftAndUpdateData = async () => {
     if (pendingChanges.length === 0) return;
@@ -425,117 +450,29 @@ function Calendar() {
     }
   };
   
-  // Check if a day/station has a pending change
-  const hasPendingChange = (dayIndex: number, stationNum: number) => {
-    const day = calendarDays[dayIndex];
-    if (!day) return false;
-    
-    return pendingChanges.some(shift => 
-      isSameDay(new Date(shift.shiftDate), day.date) && 
-      shift.stationNum === stationNum
-    );
-  };
-  
-  // Get the cell class name based on state and validation
-  const getCellClassName = (dayIndex: number, stationNum: number) => {
-    const day = calendarDays[dayIndex];
-    if (!day) return "station-cell";
-    
-    const assignedIntern = day.assignments[stationNum];
-    const isPending = hasPendingChange(dayIndex, stationNum);
-    
-    // Get validation result for this cell if available
-    const validationResult = validationResults[dayIndex]?.stationResults[stationNum];
-    const isInvalid = validationResult && !validationResult.isValid;
-    
-    let className = "station-cell";
-    
-    if (assignedIntern) {
-      className += isPending ? " pending-shift" : " existing-shift";
-    }
-    
-    if (isInvalid) {
-      className += " invalid-shift";
-    }
-    
-    return className;
-  };
-  
   return (
     <div className="calendar-container">
-      <div className="calendar-header">
-        <button 
-          className="nav-button"
-          onClick={() => changeMonth(-1)}>
-          Previous Month
-        </button>
-
-        <h2 className="month-title">
-          {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-        </h2>
-
-        <button 
-          className="nav-button"
-          onClick={() => changeMonth(1)}>
-          Next Month
-        </button>
-      </div>
+      <CalendarHeader 
+        currentDate={currentDate}
+        onChangeMonth={handleChangeMonth}
+      />
       
-      <div className="table-container" ref={tableContainerRef}>
-        <table className="calendar-table">
-          <thead>
-            <tr>
-              <th className="date-cell">Date</th>
-              <th className="day-name-cell">Day</th>
-              {allStations.map(station => (
-                <th key={station.stationNum}>
-                  {station.stationName}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {calendarDays.map((day, dayIndex) => (
-              <tr key={dayIndex} className={day.isWeekend ? 'weekend-row' : ''}>
-                <td className="date-cell">{formatDate(day.date)}</td>
-                <td className="day-name-cell">{getDayName(day.date)}</td>
-                {allStations.map(station => {
-                  const assignedIntern = day.assignments[station.stationNum];
-                  
-                  return (
-                    <td 
-                      key={station.stationNum}
-                      className={getCellClassName(dayIndex, station.stationNum)}
-                      onClick={(e) => toggleDropdown(dayIndex, station.stationNum, e)}
-                      data-day={dayIndex}
-                      data-station={station.stationNum}
-                    >
-                      {assignedIntern ? (
-                        <div className="intern-name">
-                          {assignedIntern.firstName} {assignedIntern.lastName}
-                        </div>
-                      ) : (
-                        <div className="empty-cell">Click to assign</div>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <CalendarTable
+        calendarDays={calendarDays}
+        allStations={allStations}
+        pendingChanges={pendingChangesByDay}
+        validationResults={validationResults}
+        userRole={userRole}
+        onCellClick={handleCellClick}
+      />
       
-      {/* Render the dropdown with constrained position */}
+      {/* Render the dropdown with self-contained state management */}
       <InternDropdown 
-        isOpen={activeDropdown !== null}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        targetInfo={activeDropdown}
+        targetElement={dropdownElement}
         onClose={handleCloseDropdown}
         onSelect={handleInternSelect}
         interns={allInterns}
-        referenceElement={referenceElement}
-        tableContainerRef={tableContainerRef}
       />
       
       <div className="save-button-container">

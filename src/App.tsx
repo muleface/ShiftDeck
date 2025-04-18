@@ -6,7 +6,7 @@ import Footer from "./Footer.tsx";
 import LogIn from "./LogIn.tsx";
 import SearchIntern from "./SearchIntern.tsx";
 import Menu from "./Menu.tsx";
-import Calendar from "./Calendar.tsx";
+import Calendar from "./Calendar/Calendar.tsx";
 import UserInfo from "./UserInfo.tsx";
 import {AppProvider, AppContext} from './AppContext.tsx'
 import AddUser from "./AddUser.tsx";
@@ -17,6 +17,7 @@ function App () {
     <AppProvider>
       <AppContent />
     </AppProvider>
+    
   )
 }
 

@@ -39,3 +39,15 @@ yarn-error.log*
 
 # Vite
 .vite/
+
+WebAPI/bin/Debug/net9.0/WebAPI.dll
+        WebAPI/bin/Debug/net9.0/WebAPI.exe
+        WebAPI/bin/Debug/net9.0/WebAPI.pdb
+        WebAPI/obj/Debug/net9.0/WebAPI.AssemblyInfo.cs
+        WebAPI/obj/Debug/net9.0/WebAPI.AssemblyInfoInputs.cache
+        WebAPI/obj/Debug/net9.0/WebAPI.dll
+        WebAPI/obj/Debug/net9.0/WebAPI.pdb
+        WebAPI/obj/Debug/net9.0/WebAPI.sourcelink.json
+        WebAPI/obj/Debug/net9.0/apphost.exe
+        WebAPI/obj/Debug/net9.0/ref/WebAPI.dll
+        WebAPI/obj/Debug/net9.0/refint/WebAPI.dll
