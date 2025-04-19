@@ -9,16 +9,11 @@ interface CalendarDay {
   isWeekend: boolean;
 }
 
-interface ValidationResult {
-  isValid: boolean;
-  stationResults: { [stationNum: number]: { isValid: boolean } };
-}
-
 interface CalendarTableProps {
   calendarDays: CalendarDay[];
   allStations: Station[];
   pendingChanges: { [dayIndex: number]: { [stationNum: number]: boolean } };
-  validationResults: { [dayIndex: number]: ValidationResult };
+  validationResults: { [dayIndex: number]: { [stationNum: number]: boolean } };
   userRole: string;
   onCellClick: (dayIndex: number, stationNum: number, event: React.MouseEvent) => void;
 }
@@ -58,9 +53,10 @@ function CalendarTable({
               assignments={day.assignments}
               pendingChanges={pendingChanges[dayIndex] || {}}
               invalidStations={
-                validationResults[dayIndex]?.stationResults
-                  ? Object.keys(validationResults[dayIndex].stationResults).reduce((acc, stationNum) => {
-                      acc[parseInt(stationNum)] = !validationResults[dayIndex].stationResults[parseInt(stationNum)].isValid;
+                validationResults[dayIndex]
+                  ? Object.keys(validationResults[dayIndex]).reduce((acc, stationNum) => {
+                      // In our new format, false means invalid
+                      acc[parseInt(stationNum)] = !validationResults[dayIndex][parseInt(stationNum)];
                       return acc;
                     }, {} as { [stationNum: number]: boolean })
                   : {}
