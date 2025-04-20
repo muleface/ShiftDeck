@@ -32,6 +32,7 @@ function Menu({ setMenuExpanded }: MenuProps) {
       <div className="menu-content">
         <nav>
           <ul>
+            <li><Link to="/profile"><button>Profile Page</button></Link></li>
             <li><Link to="/"><button>Calendar</button></Link></li>
             {userRole === "Manager" && (
               <li><Link to="/adduser"><button>Add Intern</button></Link></li>

@@ -117,25 +117,7 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
     }
     }, [menuExpanded]);
 
-    useEffect(() => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          const decoded: any = jwtDecode(token);
-          const internId = parseInt(decoded.internId);
-          if (internId) {
-            internService.getInternById(internId).then((intern) => {
-              setUser(intern);
-              setUserRole(decoded.role)
-            });
-          }
-        } catch (error) {
-          console.error("Invalid token. Logging out.");
-          localStorage.removeItem("token");
-          setUser(undefined);
-        }
-      }
-    }, []);
+    
 
     interface DecodedToken {
       internId: string;
@@ -145,29 +127,43 @@ export function AppProvider({children}:{ children:React.ReactNode }) {
     useEffect(() => {
       const token = localStorage.getItem("token");
     
-      if (token) {
-        try {
-          const decoded = jwtDecode<DecodedToken>(token);
-          const currentTime = Date.now() / 1000;
+      if (!token) return;
     
-          if (decoded.exp > currentTime) {
-            const internId = parseInt(decoded.internId);
-            internService.getInternById(internId)
-              .then(intern => setUser(intern))
-              .catch(() => {
-                localStorage.removeItem("token");
-                setUser(undefined);
-              });
-          } else {
-            // token expired
-            localStorage.removeItem("token");
-            setUser(undefined);
-          }
-        } catch (err) {
-          console.error("Invalid token:", err);
+      try {
+        const decoded: any = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+    
+        if (decoded.exp < currentTime) {
+          console.warn("Token expired.");
           localStorage.removeItem("token");
           setUser(undefined);
+          return;
         }
+    
+        const internId = parseInt(decoded.internId);
+        if (!internId || isNaN(internId)) {
+          console.warn("Invalid intern ID in token.");
+          localStorage.removeItem("token");
+          setUser(undefined);
+          return;
+        }
+    
+        // Set role from token
+        setUserRole(decoded.role || "Intern");
+    
+        // Fetch intern data
+        internService.getInternById(internId)
+          .then(intern => setUser(intern))
+          .catch(err => {
+            console.error("Failed to fetch intern by ID", err);
+            localStorage.removeItem("token");
+            setUser(undefined);
+          });
+    
+      } catch (err) {
+        console.error("Invalid token:", err);
+        localStorage.removeItem("token");
+        setUser(undefined);
       }
     }, []);
 

@@ -61,47 +61,53 @@ const InternDropdown: React.FC<InternDropdownProps> = ({
   // Handle positioning and visibility
   useEffect(() => {
     if (!isOpen || dropdownState.isClosing || !referenceElement || !tableContainerRef.current) return;
-    
+  
     const updatePosition = () => {
       if (!referenceElement || !tableContainerRef.current) return;
-      
+  
       const tableRect = tableContainerRef.current.getBoundingClientRect();
       const cellRect = referenceElement.getBoundingClientRect();
-      
+  
       // Check if reference is in view
-      const isOutsideBounds = 
-        cellRect.bottom > tableRect.bottom || 
+      const isOutsideBounds =
+        cellRect.bottom > tableRect.bottom ||
         cellRect.top < tableRect.top;
-      
+  
       if (isOutsideBounds) {
-        setDropdownState(state => ({ ...state, isVisible: false }));
+        if (dropdownState.isVisible) {
+          setDropdownState(state => ({ ...state, isVisible: false }));
+        }
         handleClose();
         return;
       }
-      
-      // Determine placement
+  
       const spaceBelow = tableRect.bottom - cellRect.bottom;
       const estimatedHeight = Math.min(35 + filteredInterns.length * 35, 200);
-      const placement = spaceBelow < estimatedHeight ? 'top' : 'bottom';
-      
-      setDropdownState(state => ({ 
-        ...state, 
-        isVisible: true,
-        placement
-      }));
+      const newPlacement = spaceBelow < estimatedHeight ? 'top' : 'bottom';
+  
+      // Only update state if placement or visibility actually needs to change
+      if (
+        dropdownState.placement !== newPlacement ||
+        !dropdownState.isVisible
+      ) {
+        setDropdownState(state => ({
+          ...state,
+          isVisible: true,
+          placement: newPlacement,
+        }));
+      }
     };
-    
-    // Initial position check
+  
     updatePosition();
-    
-    // Add scroll listener
+  
     const container = tableContainerRef.current;
     container.addEventListener('scroll', updatePosition);
-    
+  
     return () => {
       container.removeEventListener('scroll', updatePosition);
     };
-  }, [isOpen, dropdownState.isClosing, referenceElement, tableContainerRef, filteredInterns.length, handleClose]);
+  }, [isOpen, dropdownState.isClosing, referenceElement, tableContainerRef, filteredInterns.length]);
+  
   
   // Set up Floating UI
   const {

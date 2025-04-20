@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebAPI.Controllers
 {
@@ -136,118 +137,156 @@ namespace WebAPI.Controllers
             return shifts;
         }
 
-        // POST: api/shifts
+               // POST: api/shifts
         [HttpPost()]
         public async Task<ActionResult<Shift>> AddShift(Shift shift) 
         {
-            try {
-                // data validation conditionals
-                
+            try 
+            {
                 if (shift == null)
-                {
                     return BadRequest("Shift data is required.");
-                }
-
-                if(await _context.InternsTable.FirstOrDefaultAsync<Intern>(i => i.Id == shift.InternId) == null) // intern doesn't exist in database by id
-                {
+        
+                if (await _context.InternsTable.FirstOrDefaultAsync(i => i.Id == shift.InternId) == null)
                     return BadRequest($"No intern by Id {shift.InternId} found.");
-                }
-                
+        
                 if (shift.ShiftDate == default)
-                {
                     return BadRequest("Shift date is required.");
-                }
-
-                if (await _context.StationsTable.FirstOrDefaultAsync<Station>(st => st.StationNum == shift.StationNum) == null)
-                {
+        
+                if (await _context.StationsTable.FirstOrDefaultAsync(st => st.StationNum == shift.StationNum) == null)
                     return BadRequest("Station is nonexistent.");
-                }
-
+        
+                var shiftsToValidate = new List<Shift> { shift };
+                var validationResult = await ValidateShifts(shiftsToValidate);
+        
+                if (!validationResult.IsValid)
+                    return BadRequest("Validation failed: " + string.Join(", ", validationResult.InvalidReasons));
+        
                 bool shiftOverlap = await _context.ShiftsTable.AnyAsync(s => 
                     s.ShiftDate.Date == shift.ShiftDate.Date &&
-                    s.StationNum == shift.StationNum); //overlap for a shift on the same day and in the same station - could be different interns.
-                    
+                    s.StationNum == shift.StationNum);
+        
                 if (shiftOverlap)
-                {
                     return BadRequest($"This intern already has a shift in station no. {shift.StationNum} on {shift.ShiftDate:yyyy-MM-dd}");
-                }
-
-                // end of data validation conditionals
-                shift.ShiftDate = shift.ShiftDate.ToUniversalTime(); // Convert to UTC
+        
+                shift.ShiftDate = shift.ShiftDate.ToUniversalTime();
                 _context.ShiftsTable.Add(shift);
                 await _context.SaveChangesAsync();
-
-                return CreatedAtAction(nameof(GetShiftById), new {id = shift.Id}, shift); //1st and 2nd arg effectively combine to the relevant URL for the request
-                                                                                          // the 3rd arg is the object with the auto-generated ID.
+        
+                return CreatedAtAction(nameof(GetShiftById), new { id = shift.Id }, shift);
             }
-            catch (Exception ex) {
-
+            catch (Exception ex) 
+            {
                 return BadRequest($"Failed to add shift : {ex.Message}");
             }
         }
-
-        //PUT: api/shifts/
+        
+        // PUT: api/shifts/
         [HttpPut()]
-        public async Task<ActionResult<Shift>> ChangeShift (Shift newShift) 
+        public async Task<ActionResult<Shift>> ChangeShift(Shift newShift) 
         {
-            try {
-                // data validation conditionals
+            try 
+            {
                 if (newShift == null)
-                {
                     return BadRequest("Shift data is required.");
-                }
-
-                if(await _context.InternsTable.FirstOrDefaultAsync<Intern>(i => i.Id == newShift.InternId) == null) // intern doesn't exist in database by id
-                {
+        
+                if (await _context.InternsTable.FirstOrDefaultAsync(i => i.Id == newShift.InternId) == null)
                     return BadRequest($"No intern by Id {newShift.InternId} found.");
-                }
-                
+        
                 Shift? oldShift = await _context.ShiftsTable.FindAsync(newShift.Id);
-
+        
                 if (oldShift == null) 
-                {
                     return BadRequest($"No shift by Id {newShift.Id} found.");
-                }
-
-                else if (oldShift.InternId == newShift.InternId)
-                {
+                
+                if (oldShift.InternId == newShift.InternId)
                     return BadRequest($"Shift is already assigned to intern ID: {oldShift.InternId}. No changes necessary.");
-                }
-
-                if (await _context.ShiftsTable.AnyAsync<Shift>(s => s.Id != newShift.Id &&
-                                                                    s.ShiftDate == newShift.ShiftDate &&
-                                                                    s.InternId == newShift.InternId) == true)
-                {
+        
+                if (await _context.ShiftsTable.AnyAsync(s => s.Id != newShift.Id &&
+                                                             s.ShiftDate == newShift.ShiftDate &&
+                                                             s.InternId == newShift.InternId))
                     return BadRequest($"Intern ID: {newShift.InternId} is already assigned to a shift on {newShift.ShiftDate}");
-                }
-
-                oldShift.InternId = newShift.InternId; //this actually accesses the database and modifies the entry.
+        
+                var shiftsToValidate = new List<Shift> { newShift };
+                var validationResult = await ValidateShifts(shiftsToValidate);
+        
+                if (!validationResult.IsValid)
+                    return BadRequest("Validation failed: " + string.Join(", ", validationResult.InvalidReasons));
+        
+                oldShift.InternId = newShift.InternId;
                 await _context.SaveChangesAsync();
-
+        
                 return Ok(oldShift); 
-                                                                                          
             }
-            catch (Exception ex) {
-
-                return BadRequest($"Failed to add shift : {ex.Message}");
+            catch (Exception ex) 
+            {
+                return BadRequest($"Failed to update shift : {ex.Message}");
             }
         }
-
-        //DELETE: api/shifts/{id}
+        
+        // DELETE: api/shifts/{id}
         [HttpDelete("/{id}")]
         public async Task<IActionResult> DeleteShift(int id) 
         {
-            var shift = await _context.ShiftsTable.FirstOrDefaultAsync<Shift>(s => s.Id == id);
-
+            var shift = await _context.ShiftsTable.FirstOrDefaultAsync(s => s.Id == id);
+        
             if (shift == null)
-            {
                 return NotFound($"No shift by ID: {id} exists.");
-            }
-
+        
             _context.ShiftsTable.Remove(shift);
             await _context.SaveChangesAsync();
-
+        
             return Ok(shift);
+        }
+        
+        // INTERNAL VALIDATION METHOD
+        private async Task<(bool IsValid, List<string> InvalidReasons)> ValidateShifts(List<Shift> shifts)
+        {
+            var invalidReasons = new List<string>();
+        
+            foreach (var shift in shifts)
+            {
+                var previousDate = shift.ShiftDate.AddDays(-1).Date;
+                bool hasPreviousDayShift = await _context.ShiftsTable.AnyAsync(s =>
+                    s.InternId == shift.InternId && s.ShiftDate.Date == previousDate);
+        
+                if (hasPreviousDayShift && shift.ShiftDate.DayOfWeek != DayOfWeek.Saturday)
+                    invalidReasons.Add($"Intern {shift.InternId} scheduled on consecutive days ({previousDate:yyyy-MM-dd} and {shift.ShiftDate:yyyy-MM-dd})");
+        
+                var internRole = await _context.StationRolesTable.FirstOrDefaultAsync(r =>
+                    r.InternId == shift.InternId && r.StationNum == shift.StationNum);
+        
+                if (internRole == null)
+                {
+                    invalidReasons.Add($"Intern {shift.InternId} is not authorized for station {shift.StationNum}");
+                    continue;
+                }
+        
+                if (internRole.Role == 1)
+                {
+                    var validSeniors = await _context.JSConstraintsTable
+                        .Where(js => js.JuniorStation == shift.StationNum)
+                        .Select(js => js.SeniorStation)
+                        .ToListAsync();
+        
+                    var sameDayShifts = await _context.ShiftsTable
+                        .Where(s => s.ShiftDate.Date == shift.ShiftDate.Date)
+                        .ToListAsync();
+        
+                    var seniorRoles = await _context.StationRolesTable
+                        .Where(r => r.Role == 2)
+                        .ToListAsync();
+        
+                    bool hasSenior = sameDayShifts.Any(s =>
+                        validSeniors.Contains(s.StationNum) &&
+                        seniorRoles.Any(r =>
+                            r.InternId == s.InternId &&
+                            r.StationNum == shift.StationNum));
+        
+                    if (!hasSenior && validSeniors.Any())
+                        invalidReasons.Add($"Junior intern {shift.InternId} at station {shift.StationNum} requires senior backup");
+                }
+            }
+        
+            return (invalidReasons.Count == 0, invalidReasons);
         }
     }
 }

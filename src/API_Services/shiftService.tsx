@@ -45,7 +45,7 @@ const shiftService = {
     },
     changeShift: async(newIntern:number, oldShift:Shift): Promise<Shift> => { //consider what to do when full app context is at hand. should be able to just pass shiftId.
         const newShift = createShift(oldShift.id, newIntern, oldShift.shiftDate, oldShift.stationNum);
-        const response = await api.put<Shift>(`${BASE_URL}/${newShift}`);
+        const response = await api.put<Shift>(`${BASE_URL}`, newShift);
         return response.data;
     },
     deleteShift: async(id:number): Promise<Shift> => {

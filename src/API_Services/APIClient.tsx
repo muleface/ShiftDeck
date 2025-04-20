@@ -7,13 +7,6 @@ const api: AxiosInstance = axios.create({
 
 //interceptors are for both request and response - request interceptors intercept and modify the request before it leaves the vite server, and response interceptors
 //intercept the response before other functions can parse it.
-api.interceptors.request.use( //taken straight from an AI. I do want to implement some basic security measures later. good for resume.
-    config => {
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    });
 
 api.interceptors.response.use(
     response => { //20x response, which means a valid response. we have no reason to modify it in any way.
@@ -49,8 +42,9 @@ api.interceptors.response.use(
 
 api.interceptors.request.use(
     config => {
-        const token = localStorage.getItem("jwt");
+        const token = localStorage.getItem("token");
         if (token) {
+            console.log("✅ Using token:", token); // TEMP LOG
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -59,15 +53,3 @@ api.interceptors.request.use(
 );
 
 export default api;
-
-
-
-
-
-
-
-
-
-
-
-

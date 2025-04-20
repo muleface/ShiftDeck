@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using WebAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebAPI.Controllers
 {
@@ -56,7 +57,7 @@ namespace WebAPI.Controllers
             return interns;
         }
         // POST: api/intern
-        [HttpPost]  
+        [HttpPost]
         public async Task<ActionResult<Intern>> AddIntern(Intern intern)
         {
             if (intern == null)

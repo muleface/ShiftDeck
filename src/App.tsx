@@ -8,6 +8,7 @@ import SearchIntern from "./SearchIntern.tsx";
 import Menu from "./Menu.tsx";
 import Calendar from "./Calendar.tsx";
 import UserInfo from "./UserInfo.tsx";
+import Profile from "./profile.tsx";
 import {AppProvider, AppContext} from './AppContext.tsx'
 import AddUser from "./AddUser.tsx";
 import InactivityHandler from "./InactivityHandler";
@@ -45,6 +46,7 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<Calendar />} />
               <Route path="/user" element={<UserInfo />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/adduser" element={userRole === "Manager" ? <AddUser /> : <Navigate to="/" />} />
             </Routes>
             <Footer />

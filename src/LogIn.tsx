@@ -23,7 +23,7 @@ function LogIn() {
   }
 
   const { setUser,setUserRole } = userContext;
-
+{/*  const { setUser, setUserRole } = userContext; 
   const handleLogin = async () => {
     if (username.trim() === "" || password.trim() === "") {
       alert("Please enter a valid username and password");
@@ -62,6 +62,45 @@ function LogIn() {
       } else {
         console.error("Unexpected error:", error);
       }
+      alert("Invalid username or password.");
+    }
+  };
+  */}
+
+  const handleLogin = async () => {
+    if (username.trim() === "" || password.trim() === "") {
+      alert("Please enter a valid username and password");
+      return;
+    }
+  
+    try {
+      // 1. Login and get the token
+      const token = await login(username, password);
+      console.log("✅ Received token:", token);
+  
+      // 2. Save token to localStorage for authenticated requests
+      localStorage.setItem("token", token);
+  
+      // 3. Decode the token
+      const decoded: JwtPayload = jwtDecode(token);
+      console.log("✅ Decoded token:", decoded);
+  
+      const internId = parseInt(decoded.internId?.toString());
+      const role = decoded.role;
+  
+      if (!internId || !role) {
+        alert("Login failed: missing intern ID or role in token");
+        return;
+      }
+  
+      // 4. Fetch intern info
+      const intern = await internService.getInternById(internId);
+      console.log("✅ Intern info:", intern);
+  
+      setUser(intern);
+      setUserRole(role);
+    } catch (error) {
+      console.error("❌ Login process failed:", error);
       alert("Invalid username or password.");
     }
   };

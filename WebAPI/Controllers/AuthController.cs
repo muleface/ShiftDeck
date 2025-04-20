@@ -41,7 +41,7 @@ namespace WebAPI.Controllers
                 return BadRequest(result.Errors);
             }
 
-            // ✅ Add this part: Assign the user to a role
+            // Assign role if provided
             if (!string.IsNullOrEmpty(request.Role))
             {
                 var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
@@ -54,20 +54,27 @@ namespace WebAPI.Controllers
             return Ok("User registered successfully");
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest request)
-        {
-            var user = await _userManager.FindByNameAsync(request.UserName);
-            if (user == null)
-                return Unauthorized("Invalid username or password");
+       [HttpPost("login")]
+public async Task<IActionResult> Login(LoginRequest request)
+{
+    var user = await _userManager.FindByNameAsync(request.UserName);
+    if (user == null)
+    {
+        Console.WriteLine("❌ User not found.");
+        return Unauthorized("Invalid username or password");
+    }
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-            if (!result.Succeeded)
-                return Unauthorized("Invalid username or password");
+    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+    if (!result.Succeeded)
+    {
+        Console.WriteLine("❌ Password check failed.");
+        return Unauthorized("Invalid username or password");
+    }
 
-            var token = await GenerateJwtToken(user);
-            return Ok(new { token });
-        }
+    var token = await GenerateJwtToken(user);
+    Console.WriteLine("✅ Login successful.");
+    return Ok(new { token });
+}
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
