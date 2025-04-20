@@ -22,8 +22,8 @@ namespace WebAPI.Controllers
             _context = context;
         }
 
-        //GET: api/stationroles
-        [HttpGet]
+        //GET: api/stationroles/getallroles
+        [HttpGet("GetAllRoles")]
         public async Task<ActionResult<IEnumerable<StationRole>>> GetAllRoles () 
         {
             var stationRoles = await _context.StationRolesTable.ToListAsync<StationRole>();
@@ -37,7 +37,7 @@ namespace WebAPI.Controllers
         }
         
         //GET: api/stationroles/rolesbyinternid/{id}
-        [HttpGet("/RolesByInternID/{id}")]
+        [HttpGet("RolesByInternID/{id}")]
         public async Task<ActionResult<IEnumerable<StationRole>>> GetRolesByInternID (int id) 
         {
             var stationRoles = await _context.StationRolesTable.Where(st => st.InternId == id).ToListAsync<StationRole>();
@@ -51,7 +51,7 @@ namespace WebAPI.Controllers
         }
 
         //GET: api/stationroles/rolesbyfullname?firstName={first_name}&lastName={last_name}
-        [HttpGet("/RolesByFullName")]
+        [HttpGet("RolesByFullName")]
         public async Task<ActionResult<IEnumerable<StationRole>>> GetRolesByFullName ([FromQuery] string firstName, [FromQuery] string lastName) 
         {
             if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
@@ -70,7 +70,7 @@ namespace WebAPI.Controllers
         }
 
         //GET: api/stationroles/rolesbystationnum/{num}
-        [HttpGet("/RolesByStationNum/{num}")]
+        [HttpGet("RolesByStationNum/{num}")]
         public async Task<ActionResult<IEnumerable<StationRole>>> GetRolesByStationNum (int num)
         {
             var stationRoles = await _context.StationRolesTable.Where(r => r.StationNum == num).ToListAsync<StationRole>();
@@ -84,7 +84,7 @@ namespace WebAPI.Controllers
         }
 
         //GET: api/stationroles/rolesbystationname/{name}
-        [HttpGet("/RolesByStationName/{name}")]
+        [HttpGet("RolesByStationName/{name}")]
         public async Task<ActionResult<IEnumerable<StationRole>>> GetRolesByStationName (string name)
         {
             var station = await _context.StationsTable.FirstOrDefaultAsync(r => r.StationName == name);
@@ -143,7 +143,7 @@ namespace WebAPI.Controllers
         }
 
         //DELETE: api/stationroles/{internid}
-        [HttpDelete("/{internId}")]
+        [HttpDelete("{internId}")]
         public async Task<ActionResult<StationRole>> DeleteStationRolesByName (int? internId)
         {
             if (internId == null)

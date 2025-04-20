@@ -5,7 +5,7 @@ const BASE_URL = '/StationRoles';
 
 const stationRoleService = {
     getAllRoles: async(): Promise<StationRole[]> => {
-        const response = await api.get<StationRole[]>(`${BASE_URL}`);
+        const response = await api.get<StationRole[]>(`${BASE_URL}/GetAllRoles`);
         return response.data;
     },
     getRolesByInternId: async(id:number): Promise<StationRole[]> => {

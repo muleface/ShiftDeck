@@ -36,7 +36,7 @@ namespace WebAPI.Controllers
         }
 
         //GET: api/stations/getstationbyname/{name}
-        [HttpGet("/GetStationByName/{name}")]
+        [HttpGet("GetStationByName/{name}")]
         public async Task<ActionResult<Station>> GetStationByName (string name) 
         {
             var station = await _context.StationsTable.FirstOrDefaultAsync(st => st.StationName == name);
@@ -51,7 +51,7 @@ namespace WebAPI.Controllers
         }
 
         //GET: api/stations/getstationbynum/{number}
-        [HttpGet("/GetStationByNum/{num}")]
+        [HttpGet("GetStationByNum/{num}")]
         public async Task<ActionResult<Station>> GetStationByNum (int num)
         {
             var station = await _context.StationsTable.FindAsync(num);
@@ -87,7 +87,7 @@ namespace WebAPI.Controllers
         }
 
         //DELETE: api/stations/{name}
-        [HttpDelete("/{name}")]
+        [HttpDelete("{name}")]
         public async Task<ActionResult<Station>> DeleteStation (string name)
         {
             var station = await _context.StationsTable.FirstOrDefaultAsync(st => st.StationName == name);
