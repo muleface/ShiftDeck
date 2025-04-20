@@ -10,6 +10,7 @@ import Calendar from "./Calendar/Calendar.tsx";
 import UserInfo from "./UserInfo.tsx";
 import {AppProvider, AppContext} from './AppContext.tsx'
 import AddUser from "./AddUser.tsx";
+import Profile from "./profile.tsx";
 import InactivityHandler from "./InactivityHandler";
 
 function App () {
@@ -46,6 +47,7 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<Calendar />} />
               <Route path="/user" element={<UserInfo />} />
+              <Route path="/profile" element={<Profile/>} />
               <Route path="/adduser" element={userRole === "Manager" ? <AddUser /> : <Navigate to="/" />} />
             </Routes>
             <Footer />
