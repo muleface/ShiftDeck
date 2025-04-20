@@ -4,7 +4,6 @@ import "./App.css";
 import Header from "./Header.tsx";
 import Footer from "./Footer.tsx";
 import LogIn from "./LogIn.tsx";
-import SearchIntern from "./SearchIntern.tsx";
 import Menu from "./Menu.tsx";
 import Calendar from "./Calendar/Calendar.tsx";
 import UserInfo from "./UserInfo.tsx";
