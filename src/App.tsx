@@ -11,6 +11,7 @@ import {AppProvider, AppContext} from './AppContext.tsx'
 import AddUser from "./AddUser.tsx";
 import Profile from "./profile.tsx";
 import InactivityHandler from "./InactivityHandler";
+import ManagerDashboard from "./ManagerDashboard.tsx";
 
 function App () {
   return (
@@ -48,6 +49,7 @@ function AppContent() {
               <Route path="/user" element={<UserInfo />} />
               <Route path="/profile" element={<Profile/>} />
               <Route path="/adduser" element={userRole === "Manager" ? <AddUser /> : <Navigate to="/" />} />
+              <Route path="/managerPage" element={userRole === "Manager" ? <ManagerDashboard /> : <Navigate to="/" />} />
             </Routes>
             <Footer />
           </div>

@@ -51,7 +51,12 @@ const shiftService = {
     deleteShift: async(id:number): Promise<Shift> => {
         const response = await api.delete<Shift>(`${BASE_URL}/${id}`);
         return response.data;
-    }
+    },
+    getShiftStats: async (): Promise<any> => {
+        const response = await api.get(`${BASE_URL}/GetShiftStats`);
+        return response.data;
+    },
+    
 }
 
 export default shiftService;
