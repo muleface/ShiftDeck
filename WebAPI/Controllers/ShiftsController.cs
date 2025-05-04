@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi.Services;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace WebAPI.Controllers
 {
@@ -314,6 +316,97 @@ namespace WebAPI.Controllers
             });
 
             return Ok(result);
+        }
+
+        //POST: api/shifts/batch
+        [HttpPost("batch")]
+        public async Task<ActionResult<BatchOperationResults>> ProcessBatchOperations (BatchOperation batch) 
+        {
+            try
+            {
+                if (batch == null)
+                    return BadRequest("No batch operation data received.");
+
+                DateTime? targetMonth = null;
+                //this section checks if any operations were actually sent, and takes the target date so we can later validate the entire month at once.
+                if (batch.ShiftsToAdd.Any())
+                    targetMonth = batch.ShiftsToAdd.First().ShiftDate.Date;
+                else if (batch.ShiftIdsToDelete.Any())
+                {
+                    var firstShiftToDelete = await _context.ShiftsTable.FirstOrDefaultAsync<Shift>(s => batch.ShiftIdsToDelete.Contains(s.Id));
+                    if (firstShiftToDelete != null)
+                        targetMonth = firstShiftToDelete.ShiftDate.Date;
+                    else
+                        return BadRequest("Cannot find any shifts to be deleted.");
+                }
+                else
+                    return BadRequest("No batch operations were specified.");
+                
+                //this section defines the start and end of the validation period - start of month to the end of month.
+                var startOfMonth = new DateTime(targetMonth.Value.Year, targetMonth.Value.Month, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1); //AddDays(-1) goes to the last day of previous month, which is why we add a month beforehand.
+
+                //We grab the currently committed shifts of the target month from the database and keep it in memory.
+                var monthShifts = await _context.ShiftsTable.Where(s => s.ShiftDate >= startOfMonth && s.ShiftDate <= endOfMonth).ToListAsync<Shift>();
+
+                //Apply deletions to the in-memory list of shifts
+                var postDeletionsShifts = monthShifts.Where(s => !batch.ShiftIdsToDelete.Contains(s.Id)).ToList<Shift>();
+
+                //Filter out all the old shifts (old shifts that have the same date and station as new shifts, which means shifts the user intends to change)
+                var finalShifts = postDeletionsShifts.Where(s => 
+                                      !batch.ShiftsToAdd.Any(newShift =>
+                                      newShift.ShiftDate.Date == s.ShiftDate.Date &&
+                                      newShift.StationNum == s.StationNum)).ToList<Shift>();
+
+                //Add all the new shifts to finalShifts
+                foreach (Shift newShift in batch.ShiftsToAdd)
+                    finalShifts.Add(newShift);
+                
+                if (finalShifts != null)
+                {
+                    var validationResult = validateMonth(finalShifts);
+                    if (validationResult.IsValid)
+                    {
+                        //Remove all shifts from this month from the database and add finalShifts
+                         var existingMonthShifts = await _context.ShiftsTable.Where(s => s.ShiftDate >= startOfMonth && s.ShiftDate <= endOfMonth).ToListAsync();
+                         _context.ShiftsTable.RemoveRange(existingMonthShifts);
+
+                         foreach (Shift newShift in finalShifts)
+                            _context.ShiftsTable.Add(newShift);
+                        
+                        await _context.SaveChangesAsync();
+
+                        //Fetch the newly assigned shifts with the corresponding shift IDs
+                        var addedShifts = _context.ShiftsTable.Where(s => 
+                                                                batch.ShiftsToAdd.Any(newShift =>
+                                                                newShift.ShiftDate.Date == s.ShiftDate.Date &&
+                                                                newShift.StationNum == s.StationNum)).ToList<Shift>();
+                        
+
+                        return Ok(new BatchOperationResults  
+                        {
+                            AddedShifts = addedShifts,
+                            DeletedShifts = existingMonthShifts.Select(s => s.Id).ToList()
+                        });
+
+                    }
+                    else
+                        return BadRequest($"Shift Validation failed - {validationResult.ErrorMessage}"); //validateMonth will be responsible for sending detailed reason for validation failure.
+                }
+                else
+                    return BadRequest("finalShifts is null, severe logic issue.");
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error in batch operation: {e.Message}");
+                
+                return BadRequest($"An error occurred while processing the batch operation: {e.Message}");
+            }
+        }
+
+        private (bool IsValid, string ErrorMessage) validateMonth(List<Shift> shifts)
+        {
+            return (true, ""); //placeholder
         }
     }
 }
