@@ -68,15 +68,15 @@ const shiftService = {
                 const localShiftDate = new Date(shift.shiftDate);
                 
                 // Set to noon to prevent timezone shifts
-                localShiftDate.setHours(12, 0, 0, 0);
+                localShiftDate.setUTCHours(12, 0, 0, 0);
                 
                 // Create a new Date object for UTC conversion
-                const utcDate = new Date(localShiftDate.getTime() - localShiftDate.getTimezoneOffset() * 60000);
+                const utcShiftDate = new Date(localShiftDate.getTime() - localShiftDate.getTimezoneOffset() * 60000);
                 
                 // Return a properly formatted fauxShift
                 return {
                     internId: shift.internId,
-                    shiftDate: utcDate,
+                    shiftDate: utcShiftDate.toISOString(),
                     stationNum: shift.stationNum
                 };
             }),

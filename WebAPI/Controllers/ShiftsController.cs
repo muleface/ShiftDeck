@@ -345,6 +345,8 @@ namespace WebAPI.Controllers
                 //this section defines the start and end of the validation period - start of month to the end of month.
                 var startOfMonth = new DateTime(targetMonth.Value.Year, targetMonth.Value.Month, 1);
                 var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1); //AddDays(-1) goes to the last day of previous month, which is why we add a month beforehand.
+                startOfMonth = DateTime.SpecifyKind(startOfMonth, DateTimeKind.Utc); //necessary to prevent compatibility bug with DateTime Kind. 
+                endOfMonth = DateTime.SpecifyKind(endOfMonth, DateTimeKind.Utc);                
 
                 //We grab the currently committed shifts of the target month from the database and keep it in memory.
                 var monthShifts = await _context.ShiftsTable.Where(s => s.ShiftDate >= startOfMonth && s.ShiftDate <= endOfMonth).ToListAsync<Shift>();
