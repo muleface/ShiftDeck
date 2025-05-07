@@ -12,19 +12,23 @@ interface CalendarDay {
 interface CalendarTableProps {
   calendarDays: CalendarDay[];
   allStations: Station[];
-  pendingChanges: { [dayIndex: number]: { [stationNum: number]: boolean } };
-  validationResults: { [dayIndex: number]: { [stationNum: number]: boolean } };
+  pendingChanges: { [dayIndex: number]: { [stationNum:number]: boolean } };
+  modifiedCells: { [dayIndex:number]: { [stationNum:number]: boolean}}
+  validationResults: { [dayIndex: number]: { [stationNum:number]: boolean } };
   userRole: string;
   onCellClick: (dayIndex: number, stationNum: number, event: React.MouseEvent) => void;
+  onRevertCell: (dayIndex: number, stationNum:number) => void;
 }
 
 function CalendarTable({
   calendarDays,
   allStations,
   pendingChanges,
+  modifiedCells,
   validationResults,
   userRole,
-  onCellClick
+  onCellClick,
+  onRevertCell
 }: CalendarTableProps) {
   const tableContainerRef = useRef<HTMLDivElement>(null);
   
@@ -51,7 +55,8 @@ function CalendarTable({
               isWeekend={day.isWeekend}
               stations={allStations}
               assignments={day.assignments}
-              pendingChanges={pendingChanges[dayIndex] || {}}
+              pendingChanges={pendingChanges[dayIndex] || {}} // pending changes list can be empty, same with modifiedCells
+              modifiedCells={modifiedCells[dayIndex] || {}}
               invalidStations={
                 validationResults[dayIndex]
                   ? Object.keys(validationResults[dayIndex]).reduce((acc, stationNum) => {
@@ -63,6 +68,7 @@ function CalendarTable({
               }
               userRole={userRole}
               onCellClick={onCellClick}
+              onRevertCell={onRevertCell}
             />
           ))}
         </tbody>

@@ -8,11 +8,13 @@ interface DayRowProps {
   dayIndex: number;
   isWeekend: boolean;
   stations: Station[];
-  assignments: { [stationNum: number]: Intern | null };
-  pendingChanges: { [stationNum: number]: boolean };
-  invalidStations: { [stationNum: number]: boolean };
+  assignments: { [stationNum:number]: Intern | null };
+  pendingChanges: { [stationNum:number]:boolean };
+  modifiedCells: { [stationNum:number]:boolean};
+  invalidStations: { [stationNum:number]:boolean };
   userRole: string;
   onCellClick: (dayIndex: number, stationNum: number, event: React.MouseEvent) => void;
+  onRevertCell: (dayIndex:number, stationNum:number) => void;
 }
 
 function DayRow({
@@ -22,9 +24,11 @@ function DayRow({
   stations,
   assignments,
   pendingChanges,
+  modifiedCells,
   invalidStations,
   userRole,
-  onCellClick
+  onCellClick,
+  onRevertCell
 }: DayRowProps) {
   // Format date as DD/MM
   const formatDate = (date: Date) => {
@@ -51,9 +55,11 @@ function DayRow({
           stationNum={station.stationNum}
           assignedIntern={assignments[station.stationNum] || null}
           isPending={pendingChanges[station.stationNum] || false}
+          isModified= {modifiedCells[station.stationNum] || false}
           isInvalid={invalidStations[station.stationNum] || false}
           userRole={userRole}
           onCellClick={onCellClick}
+          onRevertCell={onRevertCell}
         />
       ))}
     </tr>

@@ -35,12 +35,38 @@ export function createShiftManager(dependencies: {
   // Internal state for pending changes
   let pendingChanges = [...initialPendingChanges];
   
+  // New: Internal state for pending deletions (just shift IDs)
+  let pendingDeletions: number[] = [];
+  
   // Helper to update pending changes and notify listeners
   const updatePendingChanges = (newPendingChanges: fauxShift[]) => {
     pendingChanges = newPendingChanges;
     if (onPendingChangesUpdate) {
       onPendingChangesUpdate(pendingChanges);
     }
+  };
+
+  // New: Helper to update pending deletions and notify listeners
+  const updatePendingDeletions = (newPendingDeletions: number[]) => {
+    pendingDeletions = newPendingDeletions;
+    if (onPendingChangesUpdate) {
+      // Still use the same callback to trigger re-render
+      onPendingChangesUpdate([...pendingChanges]);
+    }
+  };
+
+  // Track modified cells for UI highlighting
+  let modifiedCells: { [key: string]: boolean } = {};
+  
+  // Helper to get a unique key for a cell
+  const getCellKey = (date: Date, stationNum: number): string => {
+    return `${date.toISOString().split('T')[0]}-${stationNum}`;
+  };
+  
+  // Mark a cell as modified
+  const markCellModified = (date: Date, stationNum: number) => {
+    const cellKey = getCellKey(date, stationNum);
+    modifiedCells[cellKey] = true;
   };
 
   /**
@@ -117,10 +143,9 @@ export function createShiftManager(dependencies: {
     previousDayAssignments: { [stationNum: number]: Intern | null } | null,
     previousDayPendingShifts: fauxShift[]
   ): boolean => {
-    // Skip check if it's Saturday or no previous day assignments
-    const isSaturday = date.getDay() === 6;
-    if (isSaturday || !previousDayAssignments) {
-      return true; // Valid
+    // If no previous day assignments, valid by default
+    if (!previousDayAssignments) {
+      return true;
     }
     
     // Check if intern was scheduled yesterday in existing assignments
@@ -136,7 +161,7 @@ export function createShiftManager(dependencies: {
     // Invalid if scheduled on consecutive days
     return !(wasScheduledYesterday || scheduledInPendingYesterday);
   };
-  
+
   return {
     /**
      * Get all pending changes
@@ -144,6 +169,14 @@ export function createShiftManager(dependencies: {
      */
     getPendingChanges(): fauxShift[] {
       return [...pendingChanges]; // Return copy to prevent direct mutation
+    },
+    
+    /**
+     * New: Get pending deletions
+     * @returns Array of shift IDs to delete
+     */
+    getPendingDeletions(): number[] {
+      return [...pendingDeletions];
     },
     
     /**
@@ -164,8 +197,11 @@ export function createShiftManager(dependencies: {
      * @param newShift The shift to add
      */
     addPendingShift(newShift: fauxShift): void {
+      const shiftDate = new Date(newShift.shiftDate);
+      markCellModified(shiftDate, newShift.stationNum);
+      
       const existingIndex = pendingChanges.findIndex(shift => 
-        isSameDay(new Date(shift.shiftDate), new Date(newShift.shiftDate)) && 
+        isSameDay(new Date(shift.shiftDate), shiftDate) && 
         shift.stationNum === newShift.stationNum
       );
       
@@ -180,10 +216,27 @@ export function createShiftManager(dependencies: {
     },
     
     /**
-     * Remove a pending shift
+     * Remove a pending shift or mark existing shift for deletion
      * @param shiftToRemove Object containing date and stationNum to identify the shift
      */
     removePendingShift(shiftToRemove: { shiftDate: Date, stationNum: number }): void {
+      markCellModified(shiftToRemove.shiftDate, shiftToRemove.stationNum);
+      
+      // First, check if this is an existing shift in the database
+      const existingShift = allShifts.find(shift => 
+        isSameDay(new Date(shift.shiftDate), new Date(shiftToRemove.shiftDate)) && 
+        shift.stationNum === shiftToRemove.stationNum
+      );
+      
+      // If it's an existing shift, add it to pending deletions
+      if (existingShift) {
+        // Only add if not already pending deletion
+        if (!pendingDeletions.includes(existingShift.id)) {
+          updatePendingDeletions([...pendingDeletions, existingShift.id]);
+        }
+      }
+      
+      // Also remove from pending changes if it exists there
       const filteredChanges = pendingChanges.filter(shift => 
         !(isSameDay(new Date(shift.shiftDate), new Date(shiftToRemove.shiftDate)) && 
           shift.stationNum === shiftToRemove.stationNum)
@@ -193,10 +246,79 @@ export function createShiftManager(dependencies: {
     },
     
     /**
+     * Revert a cell modification
+     * @param date Date of the cell
+     * @param stationNum Station number of the cell
+     */
+    revertCellModification(date: Date, stationNum: number): void {
+      const cellKey = getCellKey(date, stationNum);
+      
+      // Remove from modified cells
+      if (modifiedCells[cellKey]) {
+        const newModifiedCells = { ...modifiedCells };
+        delete newModifiedCells[cellKey];
+        modifiedCells = newModifiedCells;
+      }
+      
+      // Remove from pending changes
+      const filteredChanges = pendingChanges.filter(shift => 
+        !(isSameDay(new Date(shift.shiftDate), date) && shift.stationNum === stationNum)
+      );
+      updatePendingChanges(filteredChanges);
+      
+      // Remove from pending deletions if applicable
+      const existingShift = allShifts.find(shift => 
+        isSameDay(new Date(shift.shiftDate), date) && shift.stationNum === stationNum
+      );
+      
+      if (existingShift && pendingDeletions.includes(existingShift.id)) {
+        const filteredDeletions = pendingDeletions.filter(id => id !== existingShift.id);
+        updatePendingDeletions(filteredDeletions);
+      }
+    },
+    
+    /**
      * Clear all pending changes
      */
-    clearPendingChanges(): void {
+    clearAllPending(): void {
       updatePendingChanges([]);
+      updatePendingDeletions([]);
+      modifiedCells = {};
+    },
+    
+    /**
+     * Get modified cells for UI
+     * @param year Year to filter by
+     * @param month Month to filter by (0-11)
+     * @returns Map of modified cells by day and station
+     */
+    getModifiedCells(year: number, month: number): { [dayIndex: number]: { [stationNum: number]: boolean } } {
+      const result: { [dayIndex: number]: { [stationNum: number]: boolean } } = {};
+      
+      // Convert modifiedCells object to the day/station map format
+      Object.keys(modifiedCells).forEach(key => {
+        const [dateStr, stationStr] = key.split('-');
+        if (!dateStr || !stationStr) return; // Skip invalid keys
+        
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return; // Skip invalid dates
+        
+        const stationNum = parseInt(stationStr);
+        if (isNaN(stationNum)) return; // Skip invalid station numbers
+        
+        if (date.getFullYear() === year && date.getMonth() === month) {
+          const dayIndex = date.getDate() - 1;
+          
+          if (!result[dayIndex]) {
+            result[dayIndex] = {};
+          }
+          
+          result[dayIndex][stationNum] = true;
+        }
+      });
+      
+      console.log('Modified cells for UI:', result); // Add debugging
+      return result;
     },
     
     /**
@@ -226,6 +348,35 @@ export function createShiftManager(dependencies: {
     },
     
     /**
+     * Transform pending deletions to a map for easier UI usage
+     * @param year Year to filter by
+     * @param month Month to filter by (0-11)
+     * @returns Map of pending deletions by day and station
+     */
+    transformPendingDeletionsToMap(year: number, month: number): { [dayIndex: number]: { [stationNum: number]: boolean } } {
+      const deletionsMap: { [dayIndex: number]: { [stationNum: number]: boolean } } = {};
+      
+      pendingDeletions.forEach(shiftId => {
+        const shift = allShifts.find(s => s.id === shiftId);
+        if (shift) {
+          const shiftDate = new Date(shift.shiftDate);
+          
+          if (shiftDate.getMonth() === month && shiftDate.getFullYear() === year) {
+            const dayIndex = shiftDate.getDate() - 1;
+            
+            if (!deletionsMap[dayIndex]) {
+              deletionsMap[dayIndex] = {};
+            }
+            
+            deletionsMap[dayIndex][shift.stationNum] = true;
+          }
+        }
+      });
+      
+      return deletionsMap;
+    },
+    
+    /**
      * Validate a single day's schedule, considering pending changes
      * @param currentDay Current day's assignments
      * @param previousDay Previous day's assignments (for consecutive day validation)
@@ -252,6 +403,14 @@ export function createShiftManager(dependencies: {
           if (assignedIntern) {
             effectiveAssignments[pendingShift.stationNum] = assignedIntern;
           }
+        }
+      });
+      
+      // Apply pending deletions to the assignments
+      pendingDeletions.forEach(shiftId => {
+        const shift = allShifts.find(s => s.id === shiftId);
+        if (shift && isSameDay(new Date(shift.shiftDate), currentDay.date)) {
+          delete effectiveAssignments[shift.stationNum];
         }
       });
       
@@ -304,51 +463,52 @@ export function createShiftManager(dependencies: {
     },
     
     /**
-     * Save pending changes to the backend and update allShifts state
-     */
+ * Save pending changes and deletions using batch processing
+ */
     async saveShifts(): Promise<void> {
-      if (pendingChanges.length === 0) return;
+      if (pendingChanges.length === 0 && pendingDeletions.length === 0) return;
       
       try {
-        const savedShifts: Shift[] = [];
+        // Use the batch operation endpoint
+        const batchResults = await shiftService.processBatchOperations(
+          pendingChanges,
+          pendingDeletions
+        );
         
-        for (const pendingShift of pendingChanges) {
-          // Check if a shift for that date and station already exists
-          const oldShift = allShifts.find(shift => 
-            isSameDay(new Date(shift.shiftDate), new Date(pendingShift.shiftDate)) && 
-            shift.stationNum === pendingShift.stationNum
+        // Update allShifts state with the results
+        setAllShifts(prevShifts => {
+          // Remove deleted shifts
+          const updatedShifts = prevShifts.filter(shift => 
+            !batchResults.deletedShifts.includes(shift.id)
           );
           
-          let savedShift: Shift;
-          if (oldShift) {
-            savedShift = await shiftService.changeShift(pendingShift.internId, oldShift);
-          } else {
-            savedShift = await shiftService.addShift(pendingShift);
-          }
-          
-          savedShifts.push(savedShift);
-        }
-        
-        // Update allShifts state directly
-        setAllShifts(prevShifts => {
-          const newShifts = [...prevShifts];
-          
-          savedShifts.forEach(savedShift => {
-            const existingIndex = newShifts.findIndex(s => s.id === savedShift.id);
+          // Add new shifts and update existing ones
+          batchResults.addedShifts.forEach(addedShift => {
+            const existingIndex = updatedShifts.findIndex(s => s.id === addedShift.id);
+            
             if (existingIndex >= 0) {
-              newShifts[existingIndex] = savedShift;
+              // Update existing shift
+              updatedShifts[existingIndex] = addedShift;
             } else {
-              newShifts.push(savedShift);
+              // Add new shift
+              updatedShifts.push(addedShift);
             }
           });
           
-          return newShifts;
+          return updatedShifts;
         });
         
-        // Clear pending changes after successful save
-        updatePendingChanges([]);
+        // Reset pending changes and deletions
+        pendingChanges = [];
+        pendingDeletions = [];
+        modifiedCells = {};
+        
+        // Notify listeners of state change
+        if (onPendingChangesUpdate) {
+          onPendingChangesUpdate(pendingChanges);
+        }
       } catch (err) {
-        console.error('Error saving shifts:', err);
+        console.error('Error processing batch operations:', err);
         throw err;
       }
     }

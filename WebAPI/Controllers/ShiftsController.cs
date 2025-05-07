@@ -364,7 +364,8 @@ namespace WebAPI.Controllers
                 
                 if (finalShifts != null)
                 {
-                    var validationResult = validateMonth(finalShifts);
+                    //we start a day earlier and finish a day later to account for consecutive day assignments at the ends of the range.
+                    var validationResult = validateRange(finalShifts, startOfMonth, endOfMonth);
                     if (validationResult.IsValid)
                     {
                         //Remove all shifts from this month from the database and add finalShifts
@@ -404,9 +405,155 @@ namespace WebAPI.Controllers
             }
         }
 
-        private (bool IsValid, string ErrorMessage) validateMonth(List<Shift> shifts)
+        private (bool IsValid, string ErrorMessage) validateRange(List<Shift> shifts, DateTime startOfMonth, DateTime endOfMonth)
         {
-            return (true, ""); //placeholder
+            if (shifts == null || !shifts.Any())
+                return (true, ""); // No shifts to validate
+
+            // Group shifts by date for easy access
+            var shiftsByDate = shifts
+                .GroupBy(s => s.ShiftDate.Date)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Group shifts by intern for consecutive day validation
+            var shiftsByIntern = shifts
+                .GroupBy(s => s.InternId)
+                .ToDictionary(g => g.Key, g => g.OrderBy(s => s.ShiftDate).ToList());
+
+            // Validation results
+            var isValid = true;
+            var errors = new List<string>();
+
+            // 1. Validate station authorization
+            foreach (var shift in shifts)
+            {
+                var stationRole = _context.StationRolesTable
+                    .FirstOrDefault(r => r.InternId == shift.InternId && r.StationNum == shift.StationNum);
+                
+                if (stationRole == null || stationRole.Role <= 0)
+                {
+                    isValid = false;
+                    errors.Add($"Intern {shift.InternId} is not authorized for station {shift.StationNum} on {shift.ShiftDate:yyyy-MM-dd}");
+                }
+            }
+
+            // 2. Validate consecutive days
+            if (!ValidateConsecutiveDays(shiftsByIntern, out var consecutiveDaysErrors))
+            {
+                isValid = false;
+                errors.AddRange(consecutiveDaysErrors);
+            }
+
+            // 3. Validate junior-senior backup requirements
+            if (!ValidateJuniorSeniorBackup(shifts, shiftsByDate, out var backupErrors))
+            {
+                isValid = false;
+                errors.AddRange(backupErrors);
+            }
+
+            return (isValid, string.Join("; ", errors));
         }
-    }
+
+        private bool ValidateConsecutiveDays(Dictionary<int, List<Shift>> shiftsByIntern, out List<string> errors)
+        {
+            errors = new List<string>();
+            bool isValid = true;
+
+            foreach (var internId in shiftsByIntern.Keys)
+            {
+                var internShifts = shiftsByIntern[internId];
+                
+                // Check for consecutive days
+                for (int i = 0; i < internShifts.Count - 1; i++)
+                {
+                    var currentShiftDate = internShifts[i].ShiftDate.Date;
+                    var nextShiftDate = internShifts[i + 1].ShiftDate.Date;
+                    
+                    // If the difference is exactly 1 day, we have consecutive shifts
+                    if ((nextShiftDate - currentShiftDate).TotalDays == 1)
+                    {
+                        isValid = false;
+                        errors.Add($"Intern {internId} has consecutive shifts on {currentShiftDate:yyyy-MM-dd} and {nextShiftDate:yyyy-MM-dd}");
+                    }
+                }
+            }
+
+            return isValid;
+        }
+
+        private bool ValidateJuniorSeniorBackup(List<Shift> allShifts, Dictionary<DateTime, List<Shift>> shiftsByDate, out List<string> errors)
+        {
+            errors = new List<string>();
+            bool isValid = true;
+
+            // Process each day's shifts
+            foreach (var date in shiftsByDate.Keys)
+            {
+                var dayShifts = shiftsByDate[date];
+                
+                // Find all juniors working this day
+                var juniorShifts = new List<(Shift Shift, int JuniorStation)>();
+                
+                foreach (var shift in dayShifts)
+                {
+                    var stationRole = _context.StationRolesTable
+                        .FirstOrDefault(r => r.InternId == shift.InternId && r.StationNum == shift.StationNum);
+                    
+                    if (stationRole?.Role == 1) // Role 1 = Junior
+                    {
+                        juniorShifts.Add((shift, shift.StationNum));
+                    }
+                }
+                
+                // For each junior, check if they have a senior backup
+                foreach (var (juniorShift, juniorStation) in juniorShifts)
+                {
+                    // Find valid senior stations from constraints
+                    var validSeniorStations = _context.JSConstraintsTable
+                        .Where(c => c.JuniorStation == juniorStation)
+                        .Select(c => c.SeniorStation)
+                        .ToList();
+                    
+                    // If no constraints defined, no backup needed
+                    if (validSeniorStations.Count == 0)
+                        continue;
+                    
+                    bool hasSeniorBackup = false;
+                    
+                    // Check if any senior is scheduled at one of the valid stations
+                    foreach (var seniorStation in validSeniorStations)
+                    {
+                        // Find shifts at this senior station on the same day
+                        var seniorStationShifts = dayShifts.Where(s => s.StationNum == seniorStation).ToList();
+                        
+                        foreach (var potentialSeniorShift in seniorStationShifts)
+                        {
+                            // Check if this intern is actually a senior for the junior's station
+                            var isSenior = _context.StationRolesTable.Any(r => 
+                                r.InternId == potentialSeniorShift.InternId && 
+                                r.StationNum == juniorStation && 
+                                r.Role == 2); // Role 2 = Senior
+                            
+                            if (isSenior)
+                            {
+                                hasSeniorBackup = true;
+                                break;
+                            }
+                        }
+                        
+                        if (hasSeniorBackup)
+                            break;
+                    }
+                    
+                    if (!hasSeniorBackup)
+                    {
+                        isValid = false;
+                        errors.Add($"Junior intern {juniorShift.InternId} at station {juniorStation} on {date:yyyy-MM-dd} requires senior backup");
+                    }
+                }
+            }
+
+            return isValid;
+        }
+            }
 }

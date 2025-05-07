@@ -217,3 +217,42 @@
   color: #b91c1c;
   border: 2px solid #dc2626;
 }
+
+/* Add these styles to Calendar.css */
+
+.cell-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modified-cell {
+  border: 2px solid #3b82f6;
+  position: relative;
+}
+
+.revert-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.revert-button:hover {
+  opacity: 1;
+}

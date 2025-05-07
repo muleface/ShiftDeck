@@ -48,17 +48,28 @@ function Calendar() {
       allInterns,
       stationRoles,
       jsConstraints,
-      onPendingChangesUpdate: () => {
+      onPendingChangesUpdate: (changes) => {
         // Increment counter to trigger re-render when pendingChanges update
-        setPendingChangesCount(prev => prev + 1);
+        const deletions = shiftManager ? shiftManager.getPendingDeletions() : [];
+        setPendingChangesCount(changes.length + deletions.length);
       },
       allShifts,
       setAllShifts
     });
-  }, [allInterns, stationRoles, jsConstraints, setAllShifts]);
+  }, [allInterns, stationRoles, jsConstraints, allShifts, setAllShifts]);
   
   // Get current pending changes
   const pendingChanges = shiftManager.getPendingChanges();
+  const pendingDeletions = shiftManager.getPendingDeletions();
+
+  //Get modified cells for UI highlighting
+  const modifiedCellsByDay = useMemo(() => {
+    console.log("Recalculating modifiedCellsByDay", pendingChangesCount);
+    return shiftManager.getModifiedCells(
+      currentDate.getFullYear(),
+      currentDate.getMonth()
+    );
+  }, [shiftManager, currentDate, pendingChangesCount]);
   
   // Fetch all shifts on component mount
   useEffect(() => {
@@ -242,10 +253,18 @@ useEffect(() => {
       currentDate.getMonth()
     );
   }, [shiftManager, currentDate, pendingChangesCount]);
+
+  // Handle reverting a cell modification
+  const handleRevertCell = (dayIndex: number, stationNum: number) => {
+    const day = calendarDays[dayIndex];
+    if (!day) return;
+    
+    shiftManager.revertCellModification(day.date, stationNum);
+  };
   
   // Save pending changes to the server
   const saveShiftAndUpdateData = async () => {
-    if (pendingChanges.length === 0) return;
+    if (pendingChanges.length === 0 && pendingDeletions.length === 0) return;
     
     setIsSaving(true);
     
@@ -270,9 +289,11 @@ useEffect(() => {
           calendarDays={calendarDays}
           allStations={allStations}
           pendingChanges={pendingChangesByDay}
+          modifiedCells = {modifiedCellsByDay}
           validationResults={validationResults}
           userRole={userRole}
           onCellClick={handleCellClick}
+          onRevertCell = {handleRevertCell}
         />
       </div>
       
@@ -288,10 +309,10 @@ useEffect(() => {
       <div className="save-button-container">
         <button 
           className="save-button"
-          disabled={pendingChanges.length === 0 || isSaving}
+          disabled={pendingChangesCount === 0 || isSaving}
           onClick={saveShiftAndUpdateData}
         >
-          {isSaving ? 'Saving...' : `Save Changes (${pendingChanges.length})`}
+          {isSaving ? 'Saving...' : `Save Changes (${pendingChangesCount})`}
         </button>
       </div>
     </div>

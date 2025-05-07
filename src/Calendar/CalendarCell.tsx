@@ -7,9 +7,11 @@ interface CalendarCellProps {
   stationNum: number;
   assignedIntern: Intern | null;
   isPending: boolean;
+  isModified: boolean;
   isInvalid: boolean;
   userRole: string;
   onCellClick: (dayIndex: number, stationNum: number, event: React.MouseEvent) => void;
+  onRevertCell: (dayIndex: number, stationNum:number) => void;
 }
 
 function CalendarCell({ 
@@ -17,9 +19,11 @@ function CalendarCell({
   stationNum,
   assignedIntern,
   isPending,
+  isModified,
   isInvalid,
   userRole,
-  onCellClick
+  onCellClick,
+  onRevertCell
 }: CalendarCellProps) {
   // Determine the CSS class name based on cell status
   const getCellClassName = () => {
@@ -27,6 +31,10 @@ function CalendarCell({
     
     if (assignedIntern) {
       className += isPending ? " pending-shift" : " existing-shift";
+    }
+
+    if (isModified) {
+      className += "modified-cell";
     }
     
     if (isInvalid) {
@@ -43,6 +51,11 @@ function CalendarCell({
     }
   };
 
+  const handleRevert = (event: React.MouseEvent) => {
+    event.stopPropagation(); //prevent triggering cell click on parent elements (for example, it should prevent the intern dropdown list from showing)
+    onRevertCell(dayIndex, stationNum);
+  }
+
   return (
     <td 
       className={getCellClassName()}
@@ -50,13 +63,24 @@ function CalendarCell({
       data-day={dayIndex}
       data-station={stationNum}
     >
-      {assignedIntern ? (
-        <div className="intern-name">
-          {assignedIntern.firstName} {assignedIntern.lastName}
-        </div>
-      ) : (
-        <div className="empty-cell">Click to assign</div>
-      )}
+      <div className="cell-content">
+        {assignedIntern ? (
+          <div className="intern-name">
+            {assignedIntern.firstName} {assignedIntern.lastName}
+          </div>
+        ) : (
+          <div className="empty-cell">Click to assign</div>
+        )}
+        {isModified && userRole === 'Manager' && (
+          <button 
+            className="revert-button"
+            onClick={handleRevert}
+            title="Revert changes"
+          >
+            ↺
+          </button>
+        )}
+      </div>
     </td>
   );
 }
