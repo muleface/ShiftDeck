@@ -381,29 +381,11 @@ export function createShiftManager(dependencies: {
         const result = await shiftService.processBatchOperations(
           pendingChanges,
           pendingDeletions
-        );
+        ); //result should later be used to present the reasons for commit failure to the user in a pop-up.
         
-        // Update allShifts state with the results
-        setAllShifts(prevShifts => {
-          // Start with the previous shifts, excluding any that were deleted
-          const newShifts = prevShifts.filter(
-            shift => !pendingDeletions.includes(shift.id)
-          );
-          
-          // Add the newly added/updated shifts
-          if (result.addedShifts && result.addedShifts.length > 0) {
-            result.addedShifts.forEach(newShift => {
-              const existingIndex = newShifts.findIndex(s => s.id === newShift.id);
-              if (existingIndex >= 0) {
-                newShifts[existingIndex] = newShift;
-              } else {
-                newShifts.push(newShift);
-              }
-            });
-          }
-          
-          return newShifts;
-        });
+        // After saving, fetch all shifts fresh from the server
+        const shifts = await shiftService.getAllShifts();
+        setAllShifts(shifts);
         
         // Clear pending changes after successful save
         pendingChanges = [];
