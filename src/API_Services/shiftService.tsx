@@ -3,6 +3,11 @@ import {Shift, createShift, fauxShift} from './Models.tsx'
 
 const BASE_URL = '/Shifts';
 
+interface BatchOperationResults {
+    addedShifts: Shift[];
+    deletedShifts: number[];
+}
+
 const shiftService = {
     getAllShifts: async(): Promise<Shift[]> => {
         const response = await api.get<Shift[]>(`${BASE_URL}/GetAllShifts`);
@@ -56,6 +61,31 @@ const shiftService = {
         const response = await api.get(`${BASE_URL}/GetShiftStats`);
         return response.data;
     },
+    processBatchOperations: async(shiftsToAdd: fauxShift[], shiftIdsToDelete: number[]): Promise<BatchOperationResults> => {
+        const batchOperation = {
+            shiftsToAdd: shiftsToAdd.map(shift => {
+                // Create a copy of the shift with the date properly formatted
+                const localShiftDate = new Date(shift.shiftDate);
+                
+                // Set to noon to prevent timezone shifts
+                localShiftDate.setHours(12, 0, 0, 0);
+                
+                // Create a new Date object for UTC conversion
+                const utcDate = new Date(localShiftDate.getTime() - localShiftDate.getTimezoneOffset() * 60000);
+                
+                // Return a properly formatted fauxShift
+                return {
+                    internId: shift.internId,
+                    shiftDate: utcDate,
+                    stationNum: shift.stationNum
+                };
+            }),
+            shiftIdsToDelete: shiftIdsToDelete
+        };
+    
+        const response = await api.post<BatchOperationResults>(`${BASE_URL}/batch`, batchOperation);
+        return response.data;
+    }
     
 }
 
