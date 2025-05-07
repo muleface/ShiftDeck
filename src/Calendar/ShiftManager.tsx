@@ -34,6 +34,7 @@ export function createShiftManager(dependencies: {
   
   // Internal state for pending changes
   let pendingChanges = [...initialPendingChanges];
+  let pendingDeletions = [];
   
   // Helper to update pending changes and notify listeners
   const updatePendingChanges = (newPendingChanges: fauxShift[]) => {
@@ -42,6 +43,7 @@ export function createShiftManager(dependencies: {
       onPendingChangesUpdate(pendingChanges);
     }
   };
+
 
   /**
    * Check Junior-Senior constraints
@@ -117,12 +119,10 @@ export function createShiftManager(dependencies: {
     previousDayAssignments: { [stationNum: number]: Intern | null } | null,
     previousDayPendingShifts: fauxShift[]
   ): boolean => {
-    // Skip check if it's Saturday or no previous day assignments
-    const isSaturday = date.getDay() === 6;
-    if (isSaturday || !previousDayAssignments) {
+    // Skip check if no previous day assignments
+    if (!previousDayAssignments) {
       return true; // Valid
     }
-    
     // Check if intern was scheduled yesterday in existing assignments
     const wasScheduledYesterday = Object.values(previousDayAssignments).some(
       prevIntern => prevIntern && prevIntern.id === intern.id
