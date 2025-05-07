@@ -380,7 +380,7 @@ namespace WebAPI.Controllers
                         await _context.SaveChangesAsync();
 
                         //Fetch the newly assigned shifts with the corresponding shift IDs
-                        var addedShifts = _context.ShiftsTable.Where(s => 
+                        var addedShifts = finalShifts.Where(s => 
                                                                 batch.ShiftsToAdd.Any(newShift =>
                                                                 newShift.ShiftDate.Date == s.ShiftDate.Date &&
                                                                 newShift.StationNum == s.StationNum)).ToList<Shift>();
