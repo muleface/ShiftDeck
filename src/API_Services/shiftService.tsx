@@ -1,5 +1,6 @@
 import api from './APIClient.tsx'
 import {Shift, createShift, fauxShift} from './Models.tsx'
+import { ShiftStats } from '../ManagerDashboard.tsx'; // assumes this file includes the function
 
 const BASE_URL = '/Shifts';
 
@@ -52,8 +53,8 @@ const shiftService = {
         const response = await api.delete<Shift>(`${BASE_URL}/${id}`);
         return response.data;
     },
-    getShiftStats: async (): Promise<any> => {
-        const response = await api.get(`${BASE_URL}/GetShiftStats`);
+    getShiftStats: async (): Promise<ShiftStats[]> => {
+        const response = await api.get<ShiftStats[]>('/Shifts/GetShiftStats');
         return response.data;
     },
     

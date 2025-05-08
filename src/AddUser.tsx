@@ -1,8 +1,14 @@
-import React, { useState} from 'react';
+import React, { useState, useEffect} from 'react';
 import './AddUser.css';
-import loginService from './API_Services/loginService.tsx';
 import { register } from './API_Services/authService.tsx';
 import internService from './API_Services/internService.tsx';
+import stationService from './API_Services/stationService.tsx';
+import stationRoleService from './API_Services/stationRoleService.tsx';
+import addStationRole from './API_Services/stationRoleService.tsx';
+import { Station, StationRole } from './API_Services/Models.tsx';
+
+
+
 
 function AddUser() {
   const [firstName, setFirstName] = useState<string>("");
@@ -11,6 +17,12 @@ function AddUser() {
   const [password, setPassword] = useState<string>("");
   const [department, setDepartment] = useState<string>("");
   const [status, setStatus] = useState<string>("intern");
+  const [stations, setStations] = useState<Station[]>([]);
+  const [stationRoles, setStationRoles] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    stationService.getAllStations().then(data => setStations(data));
+  }, []);
 
   const handleSignup = () => {
     const nameRegex = /^[A-Za-z]+$/;
@@ -31,29 +43,37 @@ function AddUser() {
     }
   
     internService.addIntern(firstName, lastName, department)
-      .then(data => {
-        const internId = data.id;
-  
-        register(userName, password, internId, status)
-          .then(() => {
-            alert("Registered new Intern");
-            setFirstName("");
-            setLastName("");
-            setUserName("");
-            setPassword("");
-            setDepartment("");
-            setStatus("Intern");
-          })
-          .catch(error => {
-            console.error("User registration failed:", error);
-            alert("User registration failed");
-          });
-  
-      })
-      .catch(error => {
-        console.error("Intern creation failed:", error);
-        alert("Intern creation failed");
-      });
+    .then(async data => {
+      const internId = data.id;
+
+      try {
+        await register(userName, password, internId, status);
+
+        for (const station of stations) {
+          const selectedRole = stationRoles[station.stationNum] ?? 0;
+          await stationRoleService.addStationRole(station.stationNum, internId, selectedRole);
+        }
+
+        alert("Registered new Intern and assigned selected roles.");
+
+        // Reset form
+        setFirstName("");
+        setLastName("");
+        setUserName("");
+        setPassword("");
+        setDepartment("");
+        setStatus("Intern");
+        setStationRoles({});  // 👈 reset all selectors to 0
+
+      } catch (error) {
+        console.error("User registration or role assignment failed:", error);
+        alert("Registration or role assignment failed.");
+      }
+    })
+    .catch(error => {
+      console.error("Intern creation failed:", error);
+      alert("Intern creation failed");
+    });
   };
 
 
@@ -95,6 +115,26 @@ function AddUser() {
         <option value="Intern">Intern</option>
         <option value="Manager">Manager</option>
       </select>
+      
+      {stations.map(station => (
+        <div key={station.stationNum}>
+          <label>{station.stationName}:</label>
+          <select
+            value={stationRoles[station.stationNum] ?? 0}
+            onChange={e =>
+              setStationRoles(prev => ({
+                ...prev,
+                [station.stationNum]: parseInt(e.target.value)
+              }))
+            }
+          >
+            <option value={0}>No Role</option>
+            <option value={1}>Junior</option>
+            <option value={2}>Senior</option>
+          </select>
+        </div>
+      ))}
+
       <button onClick={handleSignup}>Sign Up</button>
     </div>
   );

@@ -291,3 +291,5 @@ C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\refint\WebAPI.
 C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\WebAPI.pdb
 C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\WebAPI.genruntimeconfig.cache
 C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\obj\Debug\net9.0\ref\WebAPI.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\System.Formats.Asn1.dll
+C:\Users\User\Desktop\shiftdeck\ShiftDeck\WebAPI\bin\Debug\net9.0\System.Text.Json.dll

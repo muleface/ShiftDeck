@@ -54,27 +54,27 @@ namespace WebAPI.Controllers
             return Ok("User registered successfully");
         }
 
-       [HttpPost("login")]
-public async Task<IActionResult> Login(LoginRequest request)
-{
-    var user = await _userManager.FindByNameAsync(request.UserName);
-    if (user == null)
-    {
-        Console.WriteLine("❌ User not found.");
-        return Unauthorized("Invalid username or password");
-    }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequest request)
+        {
+            var user = await _userManager.FindByNameAsync(request.UserName);
+            if (user == null)
+            {
+                Console.WriteLine("❌ User not found.");
+                return Unauthorized("Invalid username or password");
+            }
 
-    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-    if (!result.Succeeded)
-    {
-        Console.WriteLine("❌ Password check failed.");
-        return Unauthorized("Invalid username or password");
-    }
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+            if (!result.Succeeded)
+            {
+                Console.WriteLine("❌ Password check failed.");
+                return Unauthorized("Invalid username or password");
+            }
 
-    var token = await GenerateJwtToken(user);
-    Console.WriteLine("✅ Login successful.");
-    return Ok(new { token });
-}
+            var token = await GenerateJwtToken(user);
+            Console.WriteLine("✅ Login successful.");
+            return Ok(new { token });
+        }
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
@@ -97,6 +97,28 @@ public async Task<IActionResult> Login(LoginRequest request)
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        [HttpPost("PromoteToManager/{userId}")]
+        public async Task<IActionResult> PromoteToManager(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound($"User with ID '{userId}' not found.");
+
+            // Check if user is already in 'Manager' role
+            if (await _userManager.IsInRoleAsync(user, "Manager"))
+                return BadRequest($"User '{user.UserName}' is already a manager.");
+
+            // Remove from Intern role if needed
+            if (await _userManager.IsInRoleAsync(user, "Intern"))
+                await _userManager.RemoveFromRoleAsync(user, "Intern");
+
+            // Assign Manager role
+            var result = await _userManager.AddToRoleAsync(user, "Manager");
+            if (!result.Succeeded)
+                return BadRequest($"Failed to assign Manager role: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+
+            return Ok($"User '{user.UserName}' promoted to Manager.");
         }
 
     }

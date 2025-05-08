@@ -20,3 +20,6 @@ export const login = async (username: string, password: string) => {
 
     return response.data.token;
 };
+export const promoteToManager = async (userId: string): Promise<void> => {
+    await api.post(`/admin/PromoteToManager/${userId}`);
+};

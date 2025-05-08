@@ -40,8 +40,10 @@ function Menu({ setMenuExpanded }: MenuProps) {
             {userRole === "Manager" && (
               <li><Link to="/managerPage"><button>Manager Page</button></Link></li>
             )}
+            {userRole === "Manager" && (
+              <SearchIntern/>
+            )}
             
-            <SearchIntern/>
           </ul>
         </nav>
       </div>

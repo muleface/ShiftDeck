@@ -28,6 +28,10 @@ const stationRoleService = {
         const newRole:StationRole = createStationRole(stationNum, internId, role);
         const response = await api.post<StationRole>(`${BASE_URL}`, newRole);
         return response.data;
+    },
+    changeStationRole: async (stationNum: number, internId: number, role: number): Promise<void> => {
+        const updatedRole: StationRole = createStationRole(stationNum, internId, role);
+        await api.put(`${BASE_URL}`, updatedRole);
     }
 }
 

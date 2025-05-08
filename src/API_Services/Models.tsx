@@ -70,10 +70,10 @@ export interface StationRole {
     role: number;
 }
 
-export function createStationRole(internId:number, stationNum:number, role:number) {
+export function createStationRole( stationNum:number, internId:number, role:number) {
     return {
-        internId,
         stationNum,
+        internId,
         role
     }
 }

@@ -288,21 +288,26 @@ namespace WebAPI.Controllers
         
             return (invalidReasons.Count == 0, invalidReasons);
         }
+
+
+
+        //edit later
         [HttpGet("GetShiftStats")]
         public async Task<ActionResult<IEnumerable<object>>> GetShiftStats()
         {
             var now = DateTime.UtcNow;
-            var thisMonthStart = new DateTime(now.Year, now.Month, 1);
+            var thisMonthStart = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
             var lastMonth = now.AddMonths(-1);
-            var lastMonthStart = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+            var lastMonthStart = DateTime.SpecifyKind(new DateTime(lastMonth.Year, lastMonth.Month, 1), DateTimeKind.Utc);
             var rangeStart = lastMonthStart;
-            var rangeEnd = thisMonthStart.AddMonths(1);
+            var rangeEnd = DateTime.SpecifyKind(thisMonthStart.AddMonths(1), DateTimeKind.Utc);
 
             var shifts = await _context.ShiftsTable
                 .Where(s => s.ShiftDate >= rangeStart && s.ShiftDate < rangeEnd)
                 .ToListAsync();
 
             var interns = await _context.InternsTable.ToListAsync();
+            var users = await _context.Users.ToListAsync(); // AspNetUsers = ApplicationUser
 
             var result = interns.Select(intern => new {
                 InternId = intern.Id,
@@ -310,7 +315,8 @@ namespace WebAPI.Controllers
                 TotalShifts = shifts.Count(s => s.InternId == intern.Id),
                 WeekendShifts = shifts.Count(s =>
                     s.InternId == intern.Id &&
-                    (s.ShiftDate.DayOfWeek == DayOfWeek.Friday || s.ShiftDate.DayOfWeek == DayOfWeek.Saturday))
+                    (s.ShiftDate.DayOfWeek == DayOfWeek.Friday || s.ShiftDate.DayOfWeek == DayOfWeek.Saturday)),
+                UserId = users.FirstOrDefault(u => u.InternId == intern.Id)?.Id
             });
 
             return Ok(result);
