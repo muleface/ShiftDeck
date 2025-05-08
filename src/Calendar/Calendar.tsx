@@ -20,8 +20,8 @@ function Calendar() {
   const [allShifts, setAllShifts] = useState<Shift[]>([]);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   
-  // For tracking pending changes updates to trigger re-renders
-  const [pendingChangesCount, setPendingChangesCount] = useState<number>(0);
+  // For tracking pending changes and triggering re-renders
+  const [pendingUpdateCounter, setPendingUpdateCounter] = useState<number>(0);
   
   // Dropdown state
   const [activeDropdown, setActiveDropdown] = useState<{
@@ -49,16 +49,82 @@ function Calendar() {
       stationRoles,
       jsConstraints,
       onPendingChangesUpdate: () => {
-        // Increment counter to trigger re-render when pendingChanges update
-        setPendingChangesCount(prev => prev + 1);
+        // Just increment counter to trigger re-render when pendingChanges update
+        setPendingUpdateCounter(prev => prev + 1);
       },
       allShifts,
       setAllShifts
     });
-  }, [allInterns, stationRoles, jsConstraints, setAllShifts]);
+  }, [allInterns, stationRoles, jsConstraints, allShifts, setAllShifts]);
   
-  // Get current pending changes
+  // Generate calendar days for the current month
+  useEffect(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Get current pending changes and deletions (inside the effect to prevent dependency issues)
+    const pendingChanges = shiftManager.getPendingChanges();
+    const pendingDeletions = shiftManager.getPendingDeletions();
+    
+    // Get number of days in the month
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days: CalendarDay[] = [];
+    
+    // Create each day in the month
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Friday or Saturday
+      
+      days.push({
+        date,
+        assignments: {},
+        isWeekend
+      });
+    }
+    
+    // Apply existing shifts from the server (excluding those marked for deletion)
+    if (allShifts.length > 0) {
+      allShifts.forEach(shift => {
+        const shiftDate = new Date(shift.shiftDate);
+        
+        // Skip if this shift is marked for deletion
+        if (pendingDeletions.includes(shift.id)) return;
+        
+        // Check if this shift belongs to the current month
+        if (shiftDate.getMonth() === month && shiftDate.getFullYear() === year) {
+          const dayIndex = shiftDate.getDate() - 1;
+          if (days[dayIndex]) {
+            const assignedIntern = allInterns.find(intern => intern.id === shift.internId);
+            if (assignedIntern) {
+              days[dayIndex].assignments[shift.stationNum] = assignedIntern;
+            }
+          }
+        }
+      });
+    }
+    
+    // Apply pending changes
+    pendingChanges.forEach(pendingShift => {
+      const pendingDate = new Date(pendingShift.shiftDate);
+      if (pendingDate.getMonth() === month && pendingDate.getFullYear() === year) {
+        const dayIndex = pendingDate.getDate() - 1;
+        if (days[dayIndex]) {
+          const assignedIntern = allInterns.find(intern => intern.id === pendingShift.internId);
+          if (assignedIntern) {
+            days[dayIndex].assignments[pendingShift.stationNum] = assignedIntern;
+          }
+        }
+      }
+    });
+    
+    setCalendarDays(days);
+  }, [currentDate, allShifts, allInterns, pendingUpdateCounter, shiftManager]);
+  
+  // Get current pending changes and deletions for the UI
   const pendingChanges = shiftManager.getPendingChanges();
+  const pendingDeletions = shiftManager.getPendingDeletions();
+  const totalPendingOperations = pendingChanges.length + pendingDeletions.length;
   
   // Fetch all shifts on component mount
   useEffect(() => {
@@ -95,63 +161,6 @@ function Calendar() {
       };
     }
   }, [activeDropdown]);
-  
-  // Generate calendar days for the current month
-useEffect(() => {
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  
-  // Get number of days in the month
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const days: CalendarDay[] = [];
-  
-  // Create each day in the month
-  for (let i = 1; i <= daysInMonth; i++) {
-    const date = new Date(year, month, i);
-    const dayOfWeek = date.getDay();
-    const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Friday or Saturday
-    
-    days.push({
-      date,
-      assignments: {},
-      isWeekend
-    });
-  }
-  
-  // Apply existing shifts from the server
-  if (allShifts.length > 0) {
-    allShifts.forEach(shift => {
-      const shiftDate = new Date(shift.shiftDate);
-      // Check if this shift belongs to the current month
-      if (shiftDate.getMonth() === month && shiftDate.getFullYear() === year) {
-        const dayIndex = shiftDate.getDate() - 1; // Days are 1-indexed but array is 0-indexed
-        if (days[dayIndex]) {
-          const assignedIntern = allInterns.find(intern => intern.id === shift.internId);
-          if (assignedIntern) {
-            days[dayIndex].assignments[shift.stationNum] = assignedIntern;
-          }
-        }
-      }
-    });
-  }
-  
-  // Apply pending changes
-  const currentPendingChanges = shiftManager.getPendingChanges();
-  currentPendingChanges.forEach(pendingShift => {
-    const pendingDate = new Date(pendingShift.shiftDate);
-    if (pendingDate.getMonth() === month && pendingDate.getFullYear() === year) {
-      const dayIndex = pendingDate.getDate() - 1;
-      if (days[dayIndex]) {
-        const assignedIntern = allInterns.find(intern => intern.id === pendingShift.internId);
-        if (assignedIntern) {
-          days[dayIndex].assignments[pendingShift.stationNum] = assignedIntern;
-        }
-      }
-    }
-  });
-  
-  setCalendarDays(days);
-}, [currentDate, allShifts, allInterns, pendingChangesCount, shiftManager]); 
   
   // Navigation functions
   const handleChangeMonth = (delta: number) => {
@@ -233,7 +242,7 @@ useEffect(() => {
   // Get validation results for the calendar
   const validationResults = useMemo(() => {
     return validateCalendar();
-  }, [calendarDays, pendingChangesCount]);
+  }, [calendarDays, pendingUpdateCounter, shiftManager]);
   
   // Transform pending changes to the format needed by child components
   const pendingChangesByDay = useMemo(() => {
@@ -241,11 +250,11 @@ useEffect(() => {
       currentDate.getFullYear(),
       currentDate.getMonth()
     );
-  }, [shiftManager, currentDate, pendingChangesCount]);
+  }, [shiftManager, currentDate, pendingUpdateCounter]);
   
   // Save pending changes to the server
   const saveShiftAndUpdateData = async () => {
-    if (pendingChanges.length === 0) return;
+    if (totalPendingOperations === 0) return;
     
     setIsSaving(true);
     
@@ -288,10 +297,10 @@ useEffect(() => {
       <div className="save-button-container">
         <button 
           className="save-button"
-          disabled={pendingChanges.length === 0 || isSaving}
+          disabled={totalPendingOperations === 0 || isSaving}
           onClick={saveShiftAndUpdateData}
         >
-          {isSaving ? 'Saving...' : `Save Changes (${pendingChanges.length})`}
+          {isSaving ? 'Saving...' : `Save Changes (${totalPendingOperations})`}
         </button>
       </div>
     </div>

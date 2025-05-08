@@ -1,8 +1,12 @@
 import api from './APIClient.tsx'
 import {Shift, createShift, fauxShift} from './Models.tsx'
-import { ShiftStats } from '../ManagerDashboard.tsx'; // assumes this file includes the function
 
 const BASE_URL = '/Shifts';
+
+interface BatchOperationResults {
+    addedShifts: Shift[];
+    deletedShifts: number[];
+}
 
 const shiftService = {
     getAllShifts: async(): Promise<Shift[]> => {
@@ -53,10 +57,35 @@ const shiftService = {
         const response = await api.delete<Shift>(`${BASE_URL}/${id}`);
         return response.data;
     },
-    getShiftStats: async (): Promise<ShiftStats[]> => {
-        const response = await api.get<ShiftStats[]>('/Shifts/GetShiftStats');
+    getShiftStats: async (): Promise<any> => {
+        const response = await api.get(`${BASE_URL}/GetShiftStats`);
         return response.data;
     },
+    processBatchOperations: async(shiftsToAdd: fauxShift[], shiftIdsToDelete: number[]): Promise<BatchOperationResults> => {
+        const batchOperation = {
+            shiftsToAdd: shiftsToAdd.map(shift => {
+                // Create a copy of the shift with the date properly formatted
+                const localShiftDate = new Date(shift.shiftDate);
+                
+                // Set to noon to prevent timezone shifts
+                localShiftDate.setUTCHours(12, 0, 0, 0);
+                
+                // Create a new Date object for UTC conversion
+                const utcShiftDate = new Date(localShiftDate.getTime() - localShiftDate.getTimezoneOffset() * 60000);
+                
+                // Return a properly formatted fauxShift
+                return {
+                    internId: shift.internId,
+                    shiftDate: utcShiftDate.toISOString(),
+                    stationNum: shift.stationNum
+                };
+            }),
+            shiftIdsToDelete: shiftIdsToDelete
+        };
+    
+        const response = await api.post<BatchOperationResults>(`${BASE_URL}/batch`, batchOperation);
+        return response.data;
+    }
     
 }
 

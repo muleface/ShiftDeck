@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi.Services;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace WebAPI.Controllers
 {
@@ -288,38 +290,274 @@ namespace WebAPI.Controllers
         
             return (invalidReasons.Count == 0, invalidReasons);
         }
-
-
-
-        //edit later
         [HttpGet("GetShiftStats")]
-        public async Task<ActionResult<IEnumerable<object>>> GetShiftStats()
+public async Task<ActionResult<IEnumerable<object>>> GetShiftStats()
+{
+    var now = DateTime.UtcNow;
+    var thisMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+    var lastMonth = now.AddMonths(-1);
+    var lastMonthStart = new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+    var rangeStart = lastMonthStart;
+    var rangeEnd = new DateTime(thisMonthStart.Year, thisMonthStart.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1);
+
+    var shifts = await _context.ShiftsTable
+        .Where(s => s.ShiftDate >= rangeStart && s.ShiftDate < rangeEnd)
+        .ToListAsync();
+
+    var interns = await _context.InternsTable.ToListAsync();
+    var users = await _context.Users.ToListAsync();
+
+    var result = interns.Select(intern => new
+    {
+        InternId = intern.Id,
+        InternName = $"{intern.FirstName} {intern.LastName}",
+        TotalShifts = shifts.Count(s => s.InternId == intern.Id),
+        WeekendShifts = shifts.Count(s =>
+            s.InternId == intern.Id &&
+            (s.ShiftDate.DayOfWeek == DayOfWeek.Friday || s.ShiftDate.DayOfWeek == DayOfWeek.Saturday)),
+        UserId = users.FirstOrDefault(u => u.InternId == intern.Id)?.Id
+    });
+
+    return Ok(result);
+}
+
+        //POST: api/shifts/batch
+        [HttpPost("batch")]
+        public async Task<ActionResult<BatchOperationResults>> ProcessBatchOperations (BatchOperation batch) 
         {
-            var now = DateTime.UtcNow;
-            var thisMonthStart = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
-            var lastMonth = now.AddMonths(-1);
-            var lastMonthStart = DateTime.SpecifyKind(new DateTime(lastMonth.Year, lastMonth.Month, 1), DateTimeKind.Utc);
-            var rangeStart = lastMonthStart;
-            var rangeEnd = DateTime.SpecifyKind(thisMonthStart.AddMonths(1), DateTimeKind.Utc);
+            try
+            {
+                if (batch == null)
+                    return BadRequest("No batch operation data received.");
 
-            var shifts = await _context.ShiftsTable
-                .Where(s => s.ShiftDate >= rangeStart && s.ShiftDate < rangeEnd)
-                .ToListAsync();
+                DateTime? targetMonth = null;
+                //this section checks if any operations were actually sent, and takes the target date so we can later validate the entire month at once.
+                if (batch.ShiftsToAdd.Any())
+                    targetMonth = batch.ShiftsToAdd.First().ShiftDate.Date;
+                else if (batch.ShiftIdsToDelete.Any())
+                {
+                    var firstShiftToDelete = await _context.ShiftsTable.FirstOrDefaultAsync<Shift>(s => batch.ShiftIdsToDelete.Contains(s.Id));
+                    if (firstShiftToDelete != null)
+                        targetMonth = firstShiftToDelete.ShiftDate.Date;
+                    else
+                        return BadRequest("Cannot find any shifts to be deleted.");
+                }
+                else
+                    return BadRequest("No batch operations were specified.");
+                
+                //this section defines the start and end of the validation period - start of month to the end of month.
+                var startOfMonth = new DateTime(targetMonth.Value.Year, targetMonth.Value.Month, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1); //AddDays(-1) goes to the last day of previous month, which is why we add a month beforehand.
+                startOfMonth = DateTime.SpecifyKind(startOfMonth, DateTimeKind.Utc); //necessary to prevent compatibility bug with DateTime Kind. 
+                endOfMonth = DateTime.SpecifyKind(endOfMonth, DateTimeKind.Utc);                
 
-            var interns = await _context.InternsTable.ToListAsync();
-            var users = await _context.Users.ToListAsync(); // AspNetUsers = ApplicationUser
+                //We grab the currently committed shifts of the target month from the database and keep it in memory.
+                var monthShifts = await _context.ShiftsTable.Where(s => s.ShiftDate >= startOfMonth && s.ShiftDate <= endOfMonth).ToListAsync<Shift>();
 
-            var result = interns.Select(intern => new {
-                InternId = intern.Id,
-                InternName = $"{intern.FirstName} {intern.LastName}",
-                TotalShifts = shifts.Count(s => s.InternId == intern.Id),
-                WeekendShifts = shifts.Count(s =>
-                    s.InternId == intern.Id &&
-                    (s.ShiftDate.DayOfWeek == DayOfWeek.Friday || s.ShiftDate.DayOfWeek == DayOfWeek.Saturday)),
-                UserId = users.FirstOrDefault(u => u.InternId == intern.Id)?.Id
-            });
+                //Apply deletions to the in-memory list of shifts
+                var postDeletionsShifts = monthShifts.Where(s => !batch.ShiftIdsToDelete.Contains(s.Id)).ToList<Shift>();
 
-            return Ok(result);
+                //Filter out all the old shifts (old shifts that have the same date and station as new shifts, which means shifts the user intends to change)
+                var finalShifts = postDeletionsShifts.Where(s => 
+                                      !batch.ShiftsToAdd.Any(newShift =>
+                                      newShift.ShiftDate.Date == s.ShiftDate.Date &&
+                                      newShift.StationNum == s.StationNum)).ToList<Shift>();
+
+                //Add all the new shifts to finalShifts
+                foreach (Shift newShift in batch.ShiftsToAdd)
+                    finalShifts.Add(newShift);
+                
+                if (finalShifts != null)
+                {
+                    //we start a day earlier and finish a day later to account for consecutive day assignments at the ends of the range.
+                    var validationResult = validateRange(finalShifts, startOfMonth, endOfMonth);
+                    if (validationResult.IsValid)
+                    {
+                        //Remove all shifts from this month from the database and add finalShifts
+                         var existingMonthShifts = await _context.ShiftsTable.Where(s => s.ShiftDate >= startOfMonth && s.ShiftDate <= endOfMonth).ToListAsync();
+                         _context.ShiftsTable.RemoveRange(existingMonthShifts);
+
+                         foreach (Shift newShift in finalShifts)
+                            _context.ShiftsTable.Add(newShift);
+                        
+                        await _context.SaveChangesAsync();
+
+                        //Fetch the newly assigned shifts with the corresponding shift IDs
+                        var addedShifts = finalShifts.Where(s => 
+                                                                batch.ShiftsToAdd.Any(newShift =>
+                                                                newShift.ShiftDate.Date == s.ShiftDate.Date &&
+                                                                newShift.StationNum == s.StationNum)).ToList<Shift>();
+                        
+
+                        return Ok(new BatchOperationResults  
+                        {
+                            AddedShifts = addedShifts,
+                            DeletedShifts = existingMonthShifts.Select(s => s.Id).ToList()
+                        });
+
+                    }
+                    else
+                        return BadRequest($"Shift Validation failed - {validationResult.ErrorMessage}"); //validateMonth will be responsible for sending detailed reason for validation failure.
+                }
+                else
+                    return BadRequest("finalShifts is null, severe logic issue.");
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error in batch operation: {e.Message}");
+                
+                return BadRequest($"An error occurred while processing the batch operation: {e.Message}");
+            }
+        }
+
+        private (bool IsValid, string ErrorMessage) validateRange(List<Shift> shifts, DateTime startOfMonth, DateTime endOfMonth)
+        {
+            if (shifts == null || !shifts.Any())
+                return (true, ""); // No shifts to validate
+
+            // Group shifts by date for easy access
+            var shiftsByDate = shifts
+                .GroupBy(s => s.ShiftDate.Date)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Group shifts by intern for consecutive day validation
+            var shiftsByIntern = shifts
+                .GroupBy(s => s.InternId)
+                .ToDictionary(g => g.Key, g => g.OrderBy(s => s.ShiftDate).ToList());
+
+            // Validation results
+            var isValid = true;
+            var errors = new List<string>();
+
+            // 1. Validate station authorization
+            foreach (var shift in shifts)
+            {
+                var stationRole = _context.StationRolesTable
+                    .FirstOrDefault(r => r.InternId == shift.InternId && r.StationNum == shift.StationNum);
+                
+                if (stationRole == null || stationRole.Role <= 0)
+                {
+                    isValid = false;
+                    errors.Add($"Intern {shift.InternId} is not authorized for station {shift.StationNum} on {shift.ShiftDate:yyyy-MM-dd}");
+                }
+            }
+
+            // 2. Validate consecutive days
+            if (!ValidateConsecutiveDays(shiftsByIntern, out var consecutiveDaysErrors))
+            {
+                isValid = false;
+                errors.AddRange(consecutiveDaysErrors);
+            }
+
+            // 3. Validate junior-senior backup requirements
+            if (!ValidateJuniorSeniorBackup(shifts, shiftsByDate, out var backupErrors))
+            {
+                isValid = false;
+                errors.AddRange(backupErrors);
+            }
+
+            return (isValid, string.Join("; ", errors));
+        }
+
+        private bool ValidateConsecutiveDays(Dictionary<int, List<Shift>> shiftsByIntern, out List<string> errors)
+        {
+            errors = new List<string>();
+            bool isValid = true;
+
+            foreach (var internId in shiftsByIntern.Keys)
+            {
+                var internShifts = shiftsByIntern[internId];
+                
+                // Check for consecutive days
+                for (int i = 0; i < internShifts.Count - 1; i++)
+                {
+                    var currentShiftDate = internShifts[i].ShiftDate.Date;
+                    var nextShiftDate = internShifts[i + 1].ShiftDate.Date;
+                    
+                    // If the difference is exactly 1 day, we have consecutive shifts
+                    if ((nextShiftDate - currentShiftDate).TotalDays == 1)
+                    {
+                        isValid = false;
+                        errors.Add($"Intern {internId} has consecutive shifts on {currentShiftDate:yyyy-MM-dd} and {nextShiftDate:yyyy-MM-dd}");
+                    }
+                }
+            }
+
+            return isValid;
+        }
+
+        private bool ValidateJuniorSeniorBackup(List<Shift> allShifts, Dictionary<DateTime, List<Shift>> shiftsByDate, out List<string> errors)
+        {
+            errors = new List<string>();
+            bool isValid = true;
+
+            // Process each day's shifts
+            foreach (var date in shiftsByDate.Keys)
+            {
+                var dayShifts = shiftsByDate[date];
+                
+                // Find all juniors working this day
+                var juniorShifts = new List<(Shift Shift, int JuniorStation)>();
+                
+                foreach (var shift in dayShifts)
+                {
+                    var stationRole = _context.StationRolesTable
+                        .FirstOrDefault(r => r.InternId == shift.InternId && r.StationNum == shift.StationNum);
+                    
+                    if (stationRole?.Role == 1) // Role 1 = Junior
+                    {
+                        juniorShifts.Add((shift, shift.StationNum));
+                    }
+                }
+                
+                // For each junior, check if they have a senior backup
+                foreach (var (juniorShift, juniorStation) in juniorShifts)
+                {
+                    // Find valid senior stations from constraints
+                    var validSeniorStations = _context.JSConstraintsTable
+                        .Where(c => c.JuniorStation == juniorStation)
+                        .Select(c => c.SeniorStation)
+                        .ToList();
+                    
+                    // If no constraints defined, no backup needed
+                    if (validSeniorStations.Count == 0)
+                        continue;
+                    
+                    bool hasSeniorBackup = false;
+                    
+                    // Check if any senior is scheduled at one of the valid stations
+                    foreach (var seniorStation in validSeniorStations)
+                    {
+                        // Find shifts at this senior station on the same day
+                        var seniorStationShifts = dayShifts.Where(s => s.StationNum == seniorStation).ToList();
+                        
+                        foreach (var potentialSeniorShift in seniorStationShifts)
+                        {
+                            // Check if this intern is actually a senior for the junior's station
+                            var isSenior = _context.StationRolesTable.Any(r => 
+                                r.InternId == potentialSeniorShift.InternId && 
+                                r.StationNum == juniorStation && 
+                                r.Role == 2); // Role 2 = Senior
+                            
+                            if (isSenior)
+                            {
+                                hasSeniorBackup = true;
+                                break;
+                            }
+                        }
+                        
+                        if (hasSeniorBackup)
+                            break;
+                    }
+                    
+                    if (!hasSeniorBackup)
+                    {
+                        isValid = false;
+                        errors.Add($"Junior intern {juniorShift.InternId} at station {juniorStation} on {date:yyyy-MM-dd} requires senior backup");
+                    }
+                }
+            }
+            return isValid;
         }
     }
 }
