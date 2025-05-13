@@ -206,7 +206,7 @@ function Calendar() {
     if (!day) return;
     
     if (intern) {
-      const newShift = createFauxShift(intern.id, day.date, stationNum);
+      const newShift = createFauxShift(intern.id, new Date(Date.UTC(day.date.getFullYear(), day.date.getMonth(), day.date.getDate())), stationNum);
       shiftManager.addPendingShift(newShift);
     } else {
       // Remove from pending changes if unassigning

@@ -14,20 +14,6 @@ export function createIntern(id:number, firstName:string, lastName:string, depar
     }
 }
 
-export interface Login {
-    username: string;
-    userPassword: string;
-    id: number;
-}
-
-export function createLogin(username: string, userPassword: string, id: number) {
-    return {
-        username,
-        userPassword,
-        id
-    }
-}
-
 export interface Shift {
     id: number;
     internId: number;

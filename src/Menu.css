@@ -1,133 +1,134 @@
 /* Ensure menu stays fixed */
 .menu {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 60px; /* Initial width (collapsed) */
-    height: 100%;
-    background-color: #333;
-    color: white;
-    transition: width 0.3s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    z-index: 1000; /* Make sure it stays above content */
-  }
-  
-  /* Expand menu on hover */
-  .menu:hover {
-    width: 20%;
-  }
-  
-  /* Fix menu content visibility issues */
-  .menu-content {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease-in-out;
-    width: 100%;
-    padding: 20px;
-  }
-  
-  /* Show menu content when expanded */
-  .menu:hover .menu-content {
-    opacity: 1;
-    visibility: visible;
-  }
-  
-  /* Navigation styles */
-  .menu-content nav {
-    width: 100%;
-    text-align: center;
-  }
-  
-  .menu-content ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .menu-content li {
-    margin: 10px 0;
-  }
-  
-  /* Button styles */
-  .menu-content button {
-    display: block;
-    width: 100%;
-    color: white;
-    background-color: transparent;
-    border: none;
-    padding: 16px;
-    text-align: center;
-    cursor: pointer;
-  }
-  
-  .menu-content button:hover {
-    background-color: #111;
-  }
-  
-  .menu-content a {
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  .signout {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease-in-out;
-    width: 20%;
-    padding: 10px;
-    background-color: red;
-    position: absolute;
-    bottom: 10%;
-    border-radius: 20px;
-  }
-  .signout:hover {
-    background-color: hsl(0, 100%, 40%);
-  }
-  .menu:hover .signout {
-    opacity: 1;
-    visibility: visible;
-  }
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 60px; /* Initial width (collapsed) */
+  height: 100%;
+  background-color: #333;
+  color: white;
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transition for width and scale */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 1000; /* Make sure it stays above content */
+}
 
+/* Expand menu on hover */
+.menu:hover {
+  width: 20%;
+  transform: scale(1.05); /* Slightly scale up the menu on hover */
+}
 
-  .Search-container {
-    width: 100%;
-  }
-  
-  .filtered-list {
-    max-height: 250px;
-    overflow-y: auto;
-    padding-right: 5px;
-  }
-  
-  .filtered-list ul {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-  }
-  
-  .filtered-list li {
-    padding: 8px 0;
-  }
+/* Fix menu content visibility issues */
+.menu-content {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out;
+  width: 100%;
+  padding: 20px;
+}
 
-  .filtered-list li:hover {
-    background-color: #111;
-  }
-  
-  .filtered-list a {
-    color: white;
-    text-decoration: none;
-  }
-  
-  /* Optional: styled scrollbar */
-  .filtered-list::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  .filtered-list::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 3px;
-  }
-  
-  
+/* Show menu content when expanded */
+.menu:hover .menu-content {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Navigation styles */
+.menu-content nav {
+  width: 100%;
+  text-align: center;
+}
+
+/* List item styling */
+.menu-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.menu-content li {
+  margin: 10px 0;
+}
+
+/* Button styles */
+.menu-content button {
+  display: block;
+  width: 100%;
+  color: white;
+  background-color: transparent;
+  border: none;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px; /* Rounded corners for buttons */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Button hover effect */
+.menu-content button:hover {
+  background-color: #111;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.4); /* Glow effect on hover */
+}
+
+/* Menu content links */
+.menu-content a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Sign-out button */
+.signout {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out;
+  width: 20%;
+  padding: 10px;
+  background-color: red;
+  position: absolute;
+  bottom: 10%;
+  border-radius: 20px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+}
+
+.signout:hover {
+  background-color: hsl(0, 100%, 40%);
+}
+
+.menu:hover .signout {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Profile picture styles */
+.profile-picture {
+  width: 50px; /* Slightly larger profile image */
+  height: 50px;
+  border-radius: 50%; /* Circular profile picture */
+  margin-top: 20px;
+  margin-bottom: 20px; /* More space around the logo */
+  transition: transform 0.3s ease-in-out; /* Add smooth scaling effect on hover */
+}
+
+.profile-picture:hover {
+  transform: scale(1.1); /* Slightly enlarge profile picture on hover */
+}
+
+/* Optional: styled scrollbar */
+.filtered-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filtered-list::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 3px;
+}
+
+/* Sticky footer style for the sign-out button */
+.signout {
+  position: sticky;
+  bottom: 10%;
+  left: 0;
+  right: 0;
+}

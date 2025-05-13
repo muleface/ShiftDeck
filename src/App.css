@@ -1,10 +1,12 @@
 /* General styles */
 body {
   margin: 0;
-  padding: 2rem;
-  background-color: hsl(17, 100%, 80%);
+  padding: 0; /* Removed extra padding */
+  background-color: #f0f8ff; /* Light blue background for a calm feel */
   text-align: center;
-  overflow-x: hidden; /* Prevent horizontal scroll when moving content */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font for better readability */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  color: #333; /* Dark text for good contrast */
 }
 
 /* Ensure smooth animations */
@@ -30,8 +32,9 @@ body {
   width: 100%;
   text-align: center;
   padding: 1rem;
-  background-color: #444;
+  background-color: #4a90e2; /* Soft blue background for header/footer */
   color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for better separation */
 }
 
 /* Fix main app layout */
@@ -48,14 +51,16 @@ body {
   transition: filter 300ms;
 }
 
+/* Hover effect on logo */
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #4a90e2); /* Blue glow effect */
 }
 
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #61dafb); /* React blue glow effect */
 }
 
+/* Animation for logo */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -65,16 +70,30 @@ body {
   }
 }
 
+/* Smooth spin animation when preferred reduced motion is not enabled */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
 
+/* Card styles for better presentation */
 .card {
   padding: 2em;
+  background-color: white; /* Bright background for cards */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow to card for depth */
+  margin: 1em auto;
+  max-width: 800px; /* Limit width for better layout */
 }
 
+/* Text link styling */
 .read-the-docs {
   color: #888;
+  text-decoration: underline;
+}
+
+/* Header and footer background gradient */
+.header, .footer {
+  background: linear-gradient(45deg, #4a90e2, #50e3c2); /* Soft gradient for header/footer */
 }

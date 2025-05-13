@@ -170,7 +170,7 @@ namespace WebAPI.Controllers
                 if (shiftOverlap)
                     return BadRequest($"This intern already has a shift in station no. {shift.StationNum} on {shift.ShiftDate:yyyy-MM-dd}");
         
-                shift.ShiftDate = shift.ShiftDate.ToUniversalTime();
+                //shift.ShiftDate = shift.ShiftDate.ToUniversalTime();
                 _context.ShiftsTable.Add(shift);
                 await _context.SaveChangesAsync();
         
@@ -291,35 +291,54 @@ namespace WebAPI.Controllers
             return (invalidReasons.Count == 0, invalidReasons);
         }
         [HttpGet("GetShiftStats")]
-public async Task<ActionResult<IEnumerable<object>>> GetShiftStats()
-{
-    var now = DateTime.UtcNow;
-    var thisMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-    var lastMonth = now.AddMonths(-1);
-    var lastMonthStart = new DateTime(lastMonth.Year, lastMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-    var rangeStart = lastMonthStart;
-    var rangeEnd = new DateTime(thisMonthStart.Year, thisMonthStart.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1);
+        public async Task<ActionResult<IEnumerable<object>>> GetShiftStats()
+        {
+            var now = DateTime.UtcNow;
 
-    var shifts = await _context.ShiftsTable
-        .Where(s => s.ShiftDate >= rangeStart && s.ShiftDate < rangeEnd)
-        .ToListAsync();
+            // Get the start and end of this month
+            var thisMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var thisMonthEnd = thisMonthStart.AddMonths(1).AddSeconds(-1); // End of this month
 
-    var interns = await _context.InternsTable.ToListAsync();
-    var users = await _context.Users.ToListAsync();
+            // Get the start and end of last month
+            var lastMonthStart = new DateTime(now.AddMonths(-1).Year, now.AddMonths(-1).Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var lastMonthEnd = lastMonthStart.AddMonths(1).AddSeconds(-1); // End of last month
 
-    var result = interns.Select(intern => new
-    {
-        InternId = intern.Id,
-        InternName = $"{intern.FirstName} {intern.LastName}",
-        TotalShifts = shifts.Count(s => s.InternId == intern.Id),
-        WeekendShifts = shifts.Count(s =>
-            s.InternId == intern.Id &&
-            (s.ShiftDate.DayOfWeek == DayOfWeek.Friday || s.ShiftDate.DayOfWeek == DayOfWeek.Saturday)),
-        UserId = users.FirstOrDefault(u => u.InternId == intern.Id)?.Id
-    });
+            // Fetch all shifts for both months
+            var shifts = await _context.ShiftsTable
+                .Where(s => (s.ShiftDate >= lastMonthStart && s.ShiftDate <= thisMonthEnd)) // Range from last month to end of this month
+                .ToListAsync();
 
-    return Ok(result);
-}
+            var interns = await _context.InternsTable.ToListAsync();
+
+            var result = interns.Select(intern => new
+            {
+                InternId = intern.Id,
+                InternName = $"{intern.FirstName} {intern.LastName}",
+                
+                // This month shift count
+                ThisMonthShifts = shifts.Count(s => s.InternId == intern.Id && s.ShiftDate >= thisMonthStart && s.ShiftDate <= thisMonthEnd),
+
+                // Last month shift count
+                LastMonthShifts = shifts.Count(s => s.InternId == intern.Id && s.ShiftDate >= lastMonthStart && s.ShiftDate <= lastMonthEnd),
+
+                // This month weekend shifts (Friday and Saturday)
+                ThisMonthWeekendShifts = shifts.Count(s =>
+                    s.InternId == intern.Id &&
+                    s.ShiftDate >= thisMonthStart &&
+                    s.ShiftDate <= thisMonthEnd &&
+                    (s.ShiftDate.DayOfWeek == DayOfWeek.Friday || s.ShiftDate.DayOfWeek == DayOfWeek.Saturday)),
+
+                // Last month weekend shifts (Friday and Saturday)
+                LastMonthWeekendShifts = shifts.Count(s =>
+                    s.InternId == intern.Id &&
+                    s.ShiftDate >= lastMonthStart &&
+                    s.ShiftDate <= lastMonthEnd &&
+                    (s.ShiftDate.DayOfWeek == DayOfWeek.Friday || s.ShiftDate.DayOfWeek == DayOfWeek.Saturday))
+            });
+
+            return Ok(result);
+        }
+
 
         //POST: api/shifts/batch
         [HttpPost("batch")]

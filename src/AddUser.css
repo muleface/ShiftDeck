@@ -1,63 +1,121 @@
 /* Center the signup box on the page */
 .signup-container {
-    width: 100%;
-    max-width: 400px;
-    margin: 50px auto;
-    background: #f7f9fc;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  max-width: 400px;
+  margin: 50px auto;
+  background: #e8f4f9;  /* Soft light blue background for the form container */
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Heading */
+.signup-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;  /* Dark text for good contrast */
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Input fields & select */
+.signup-container input,
+.signup-container select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccd1d9;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 16px;
+  background-color: #fff;  /* White input fields for clarity */
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focused input/selection state */
+.signup-container input:focus,
+.signup-container select:focus {
+  border-color: #005f73;  /* Muted dark blue border on focus */
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 95, 115, 0.6);
+}
+
+/* Input field hover effect */
+.signup-container input:hover,
+.signup-container select:hover {
+  border-color: #4a90e2; /* Blue hover border */
+}
+
+/* Labels for inputs */
+.signup-container label {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* Button */
+/* Button inside signup form */
+.signup-container button {
+  padding: 10px 20px; /* More compact padding */
+  background-color: #0077b6;  /* Primary blue button */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+  margin-top: 10px;
+  width: 100%; /* Keep the button width auto, so it doesn’t stretch */
+}
+
+/* Hover effect for button */
+.signup-container button:hover {
+  background-color: #005f73;  /* Slightly darker blue on hover */
+  transform: translateY(-2px); /* Subtle lift effect */
+}
+
+/* Disabled button styling */
+.signup-container button:disabled {
+  background-color: #ccc; /* Grey out the button when disabled */
+  cursor: not-allowed;
+}
+
+/* Optional: Add smooth transitions to buttons */
+.signup-container button {
+  transition: all 0.3s ease;
+}
+
+/* Optional: Add smooth transitions to inputs, selects, and buttons */
+.signup-container input,
+.signup-container select,
+.signup-container button {
+  transition: all 0.3s ease;
+}
+
+/* Select dropdown styles */
+.signup-container select {
+  cursor: pointer;
+}
+
+/* Add a bit of spacing around the role selection area */
+.signup-container div {
+  margin-top: 15px;
+}
+
+/* Optional: Add responsive adjustments */
+@media (max-width: 600px) {
+  .signup-container {
+      width: 100%;
+      padding: 20px;
   }
   
-  /* Heading */
-  .signup-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  /* Input fields & select */
-  .signup-container input,
-  .signup-container select {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ccd1d9;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 16px;
-    transition: border 0.3s ease;
-  }
-  
-  .signup-container input:focus,
-  .signup-container select:focus {
-    border-color: #4a90e2;
-    outline: none;
-  }
-  
-  /* Button */
-  .signup-container button {
-    width: 100%;
-    padding: 12px;
-    background-color: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    margin-top: 10px;
-  }
-  
-  .signup-container button:hover {
-    background-color: #357ab8;
-  }
-  
-  /* Optional: Add smooth transitions to inputs */
   .signup-container input,
   .signup-container select,
   .signup-container button {
-    transition: all 0.3s ease;
+      padding: 10px;
+      font-size: 14px;
   }
-  
+}

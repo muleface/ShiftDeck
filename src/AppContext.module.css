@@ -1,22 +1,27 @@
+/* Error Popup */
 .errorPopUp {
   padding: 20px;
-  background-color: red;
+  background-color: #ff4d4d; /* Soft red background */
   color: white;
   margin-bottom: 15px;
-  border-radius: 3px;
+  border-radius: 8px; /* Rounded corners for the popup */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  justify-content: space-between; /* Ensure the close button is at the top-right */
+  align-items: center;
 }
 
+/* Close Button */
 .closeButton {
-  margin-left: 15px;
   color: white;
   font-weight: bold;
-  float: right;
   font-size: 22px;
-  line-height: 20px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: color 0.3s ease, transform 0.3s ease; /* Smooth transition for hover effects */
 }
 
 .closeButton:hover {
-    color:black;
+  color: #333; /* Darker text on hover for visibility */
+  transform: scale(1.1); /* Slight scale effect for better feedback */
 }

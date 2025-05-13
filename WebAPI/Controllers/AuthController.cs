@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WebAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebAPI.Controllers
 {
@@ -98,28 +99,49 @@ namespace WebAPI.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        [HttpPost("PromoteToManager/{userId}")]
-        public async Task<IActionResult> PromoteToManager(string userId)
+        [HttpPost("PromoteToManager/{internId}")]
+        public async Task<IActionResult> PromoteToManager(int internId)
+{
+    // Query the user by InternId (not by Id)
+    var user = await _userManager.Users
+        .FirstOrDefaultAsync(u => u.InternId == internId);  // Use FirstOrDefaultAsync to find user by InternId
+    
+    if (user == null)
+    {
+        return NotFound($"User with InternId {internId} not found.");
+    }
+
+    // Check if the user is already a manager
+    var isAlreadyManager = await _userManager.IsInRoleAsync(user, "Manager");
+    if (isAlreadyManager)
+    {
+        return BadRequest("User is already a manager.");
+    }
+
+    // Remove the "Intern" role if the user has it
+    var isIntern = await _userManager.IsInRoleAsync(user, "Intern");
+    if (isIntern)
+    {
+        var removeInternResult = await _userManager.RemoveFromRoleAsync(user, "Intern");
+        if (!removeInternResult.Succeeded)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-                return NotFound($"User with ID '{userId}' not found.");
-
-            // Check if user is already in 'Manager' role
-            if (await _userManager.IsInRoleAsync(user, "Manager"))
-                return BadRequest($"User '{user.UserName}' is already a manager.");
-
-            // Remove from Intern role if needed
-            if (await _userManager.IsInRoleAsync(user, "Intern"))
-                await _userManager.RemoveFromRoleAsync(user, "Intern");
-
-            // Assign Manager role
-            var result = await _userManager.AddToRoleAsync(user, "Manager");
-            if (!result.Succeeded)
-                return BadRequest($"Failed to assign Manager role: {string.Join("; ", result.Errors.Select(e => e.Description))}");
-
-            return Ok($"User '{user.UserName}' promoted to Manager.");
+            return BadRequest("Failed to remove Intern role.");
         }
+    }
+
+    // Assign the Manager role
+    var result = await _userManager.AddToRoleAsync(user, "Manager");
+    if (!result.Succeeded)
+    {
+        return BadRequest("Failed to assign Manager role.");
+    }
+
+    
+
+    return Ok("User promoted to Manager.");
+}
+
+        
 
     }
 

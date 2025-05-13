@@ -1,61 +1,78 @@
 /* Container to center the form */
 .login-container {
-    width: 100%;
-    max-width: 400px;
-    margin: 80px auto;
-    background-color: #f5f7fa;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  
-  /* Title */
-  .login-container h2 {
-    text-align: center;
-    color: #2c3e50;
-    margin-bottom: 24px;
-  }
-  
-  /* Input fields */
-  .login-container input {
-    width: 100%;
-    padding: 12px 14px;
-    margin: 10px 0;
-    border: 1px solid #d0d6e2;
-    border-radius: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease;
-  }
-  
-  .login-container input:focus {
-    border-color: #4a90e2;
-    outline: none;
-  }
-  
-  /* Button */
-  .login-container button {
-    width: 100%;
-    padding: 12px;
-    background-color: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .login-container button:hover {
-    background-color: #3a78c2;
-  }
-  
-  /* Smooth transition for inputs and button */
-  .login-container input,
-  .login-container button {
-    transition: all 0.3s ease;
-  }
-  
+  width: 100%;
+  max-width: 400px;
+  margin: 80px auto;
+  background-color: #f9fafb;  /* Light background matching the app's overall theme */
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);  /* Soft shadow for depth */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Title */
+.login-container h2 {
+  text-align: center;
+  color: #333; /* Dark color for the title */
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Input fields */
+.login-container input {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 10px 0;
+  border: 1px solid #ccd1d9; /* Light border for inputs */
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: #fff; /* White input fields for clarity */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focused input/selection state */
+.login-container input:focus {
+  border-color: #4a90e2; /* Subtle blue border on focus */
+  outline: none;
+  box-shadow: 0 0 5px rgba(74, 144, 226, 0.6);  /* Slight glow effect */
+}
+
+/* Hover effect for input fields */
+.login-container input:hover {
+  border-color: #4a90e2; /* Blue border on hover */
+}
+
+/* Button */
+.login-container button {
+  width: 100%;  /* Full width for the login button */
+  padding: 12px;
+  background-color: #4a90e2;  /* Soft blue for consistency with other elements */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Hover effect for login button */
+.login-container button:hover {
+  background-color: #357ab8;  /* Darker blue when hovering */
+  transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Smooth transition for inputs and button */
+.login-container input,
+.login-container button {
+  transition: all 0.3s ease;
+}
+
+/* Disabled button styling */
+.login-container button:disabled {
+  background-color: #ccc; /* Grey out the button when disabled */
+  cursor: not-allowed;
+}

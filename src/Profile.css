@@ -1,0 +1,68 @@
+/* Container for the profile page */
+.profile-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #f9fafb; /* Light background */
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* Heading styling */
+  .profile-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  /* Table styling */
+  .profile-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  
+  .profile-container th, .profile-container td {
+    padding: 12px;
+    text-align: left;
+    font-size: 1rem;
+    border: 1px solid #ddd; /* Light border */
+  }
+  
+  .profile-container th {
+    background-color: #4a90e2; /* Header background color */
+    color: white; /* White text for the header */
+    font-weight: 600;
+  }
+  
+  .profile-container tbody tr:nth-child(even) {
+    background-color: #f7f9fc; /* Light blue for even rows */
+  }
+  
+  .profile-container tbody tr:nth-child(odd) {
+    background-color: #ffffff; /* White for odd rows */
+  }
+  
+  /* Hover effect for table rows */
+  .profile-container tbody tr:hover {
+    background-color: #e6f7ff; /* Light blue hover effect */
+    cursor: pointer;
+  }
+  
+  /* Styling for empty state message */
+  .profile-container p {
+    text-align: center;
+    color: #777; /* Light grey text for the message */
+    font-size: 1rem;
+  }
+  
+  /* Optional: Add smooth transitions to inputs and buttons */
+  .profile-container table,
+  .profile-container th,
+  .profile-container td {
+    transition: all 0.3s ease;
+  }
+  

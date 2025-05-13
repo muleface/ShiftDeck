@@ -33,19 +33,22 @@ const shiftService = {
         const response = await api.get<Shift[]>(`${BASE_URL}/GetShiftsByInternId/${id}`);
         return response.data;
     },
-    addShift: async(newShift: fauxShift): Promise<Shift> => {
-        const localShiftDate = new Date(newShift.shiftDate);
+    addShift: async (newShift: fauxShift): Promise<Shift> => {
+        const shiftDate = new Date(newShift.shiftDate);
         
-        // Ensure the date is set at midnight in LOCAL time
-        localShiftDate.setHours(12, 0, 0, 0); // Set to noon to prevent timezone shifts
-        // Convert to UTC
-        const utcShiftDate = new Date(localShiftDate.getTime() - localShiftDate.getTimezoneOffset() * 60000);
+        // Log the date in local time and UTC
+        console.log("Original Shift Date (Local):", shiftDate); // Local time
+        console.log("Shift Date in UTC (ISO):", shiftDate.toISOString()); // UTC time
+      
         const formattedShift = {
-            ...newShift,
-            shiftDate: utcShiftDate.toISOString() // Convert to UTC
+          ...newShift,
+          shiftDate: shiftDate.toISOString()  // Automatically handles UTC conversion
         };
-
+        
+        // Send the shift to the API
         const response = await api.post<Shift>(`${BASE_URL}`, formattedShift); 
+        
+        console.log("Shift sent to server:", formattedShift);  // Log what is being sent to the server
         return response.data;
     },
     changeShift: async(newIntern:number, oldShift:Shift): Promise<Shift> => { //consider what to do when full app context is at hand. should be able to just pass shiftId.

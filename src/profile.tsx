@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
-import {jwtDecode} from "jwt-decode";
-
+import { useEffect, useState, useContext } from "react";
+import { jwtDecode } from "jwt-decode";
 import shiftService from './API_Services/shiftService.tsx';
-import { Shift} from './API_Services/Models.tsx';
+import stationService from './API_Services/stationService.tsx'; // Import stationService
+import { Shift } from './API_Services/Models.tsx';
+import { AppContext } from "./AppContext";
+import './Profile.css';
 
 interface JwtPayload {
   internId: string;
@@ -12,45 +14,80 @@ interface JwtPayload {
 
 const Profile: React.FC = () => {
   const [myShifts, setMyShifts] = useState<Shift[]>([]);
+  const [stationNames, setStationNames] = useState<Record<number, string>>({}); // Map to store station names
+  const context = useContext(AppContext);
+
+  if (!context) {
+    throw new Error("useUserContext must be used within a UserContext.Provider");
+  }
+
+  const { searchedUser } = context;
 
   useEffect(() => {
     const fetchShifts = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const decoded: JwtPayload = jwtDecode(token);
-        const internId = parseInt(decoded.internId);
+      const decoded: JwtPayload = jwtDecode(token);
+      const internId = parseInt(decoded.internId);
 
-        const shifts = await shiftService.getShiftsByInternId(internId);
+      const shifts = await shiftService.getShiftsByInternId(internId);
 
-        const now = new Date();
-        const oneMonthLater = new Date();
-        oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+      const now = new Date();
+      const oneMonthLater = new Date();
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
-        const upcomingShifts = shifts.filter((shift) => {
-            const shiftDate = new Date(shift.shiftDate);
-            return shiftDate >= now && shiftDate <= oneMonthLater;
-        });
-        setMyShifts(upcomingShifts);
+      const upcomingShifts = shifts.filter((shift) => {
+        const shiftDate = new Date(shift.shiftDate);
+        return shiftDate >= now && shiftDate <= oneMonthLater;
+      });
+
+      // Sort shifts by date (closest date first)
+      const sortedShifts = upcomingShifts.sort((a, b) => {
+        const dateA = new Date(a.shiftDate);
+        const dateB = new Date(b.shiftDate);
+        return dateA.getTime() - dateB.getTime(); // Sort in ascending order
+      });
+
+      setMyShifts(sortedShifts);
+
+      // Fetch station names for the shifts using stationService
+      const nameMap: Record<number, string> = {};
+      for (const shift of sortedShifts) {
+        const station = await stationService.getStationByNum(shift.stationNum); // Use stationService
+        nameMap[shift.stationNum] = station.stationName;
+      }
+      setStationNames(nameMap);
     };
 
     fetchShifts();
-  }, []);
+  }, [searchedUser]);
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">My Shifts (Next 30 Days)</h2>
+    <div className="profile-container">
+      <h2>My Shifts (Next 30 Days)</h2>
       {myShifts.length === 0 ? (
         <p>No upcoming shifts scheduled.</p>
       ) : (
-        <ul className="space-y-2">
-          {myShifts.map((shift) => (
-            <li key={shift.id} className="border p-2 rounded shadow-sm">
-              <div><strong>Date:</strong> {new Date(shift.shiftDate).toLocaleDateString()}</div>
-              {/* Add any other shift info you'd like to show */}
-            </li>
-          ))}
-        </ul>
+        <table className="shifts-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Station</th>
+            </tr>
+          </thead>
+          <tbody>
+            {myShifts.map((shift) => {
+              const stationName = stationNames[shift.stationNum] || `Station ${shift.stationNum}`;
+              return (
+                <tr key={shift.id}>
+                  <td>{new Date(shift.shiftDate).toLocaleDateString()}</td>
+                  <td>{stationName}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       )}
     </div>
   );

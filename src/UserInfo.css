@@ -1,28 +1,89 @@
-.info{
-    border: 1px solid black;
-    border-radius: 10px;
-    box-shadow: 5px 5px 5px hsla(0,0%,0%,0.1);
-    padding: 20px;
-    margin:10px;
-    text-align: center;
-    width: 400px;
-    display: inline-block;
-    background-color: rgb(250, 215, 215);
+/* Info container styling (specific to the UserInfo page) */
+.info {
+  border: 1px solid #ccd1d9; /* Subtle border */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  padding: 20px;
+  margin: 20px auto;
+  text-align: center;
+  width: 400px;
+  background-color: #f9fafb; /* Light background */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.info p{
-    font-size: 1.5rem;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+/* Button styles specific to the .info page */
+.info button {
+  width: 100%; /* Full width for the button */
+  padding: 12px;
+  background-color: #0077b6; /* Primary button color */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+  margin-top: 10px;
 }
-.role-table {
+
+/* Hover effect for .info buttons */
+.info button:hover {
+  background-color: #005f73; /* Darker blue on hover */
+  transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Disabled button styling in .info */
+.info button:disabled {
+  background-color: #ccc; /* Grey out the button when disabled */
+  cursor: not-allowed;
+}
+
+/* Specific styling for promote role button in .info */
+.info button.promote-button {
+  background-color: #4caf50; /* Green for role promotion button */
+}
+
+.info button.promote-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}
+
+.info button.promote-button:disabled {
+  background-color: #d3e9d8; /* Light green for disabled state */
+}
+
+/* Table styling specific to UserInfo page */
+.info .role-table {
   margin-top: 1rem;
   border-collapse: collapse;
   width: 100%;
+  text-align: left;
 }
 
-.role-table th,
-.role-table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
+.info .role-table th,
+.info .role-table td {
+  border: 1px solid #ddd; /* Lighter borders for the table */
+  padding: 12px;
+  font-size: 1rem;
+  color: #333; /* Text color */
+}
+
+/* Table header styling in .info */
+.info .role-table th {
+  background-color: #4a90e2; /* Blue background for headers */
+  color: white; /* White text for headers */
+  font-weight: 600;
+}
+
+/* Alternating row colors for the table in .info */
+.info .role-table tbody tr:nth-child(even) {
+  background-color: #f7f9fc; /* Light blue for even rows */
+}
+
+.info .role-table tbody tr:nth-child(odd) {
+  background-color: #ffffff; /* White for odd rows */
+}
+
+/* Hover effect for table rows */
+.info .role-table tbody tr:hover {
+  background-color: #e6f7ff; /* Light blue hover effect */
+  cursor: pointer;
 }

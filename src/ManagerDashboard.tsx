@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import shiftService from './API_Services/shiftService.tsx';
-import { promoteToManager } from './API_Services/authService.tsx'; // assumes this file includes the function
+import "./ManagerDashboard.css";
+
 
 export interface ShiftStats {
   internId: number;
   internName: string;
-  userId: string | null;
-  totalShifts: number;
-  weekendShifts: number;
+  thisMonthShifts: number; // Update the field names
+  thisMonthWeekendShifts: number;
+  lastMonthShifts: number;
+  lastMonthWeekendShifts: number;
 }
 
 const ManagerDashboard: React.FC = () => {
@@ -20,50 +22,27 @@ const ManagerDashboard: React.FC = () => {
     });
   }, []);
 
-  const handlePromote = async (intern: ShiftStats) => {
-    if (!intern.userId) {
-      alert("Cannot promote: no user account linked.");
-      return;
-    }
-  
-    const confirm = window.confirm(`Are you sure you want to promote ${intern.internName} to manager?`);
-    if (!confirm) return;
-  
-    try {
-      await promoteToManager(intern.userId);
-      alert(`${intern.internName} has been promoted to manager.`);
-    } catch (error) {
-      console.error("Failed to promote:", error);
-      alert("Failed to promote intern.");
-    }
-  };
-
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Intern Shift Stats</h2>
-      <table className="min-w-full border-collapse border">
+    <div className="shifts-stats">
+      <h2>Intern Shift Stats</h2>
+      <table >
         <thead>
           <tr>
-            <th className="border px-4 py-2">Intern</th>
-            <th className="border px-4 py-2">Total Shifts</th>
-            <th className="border px-4 py-2">Weekend Shifts</th>
-            <th className="border px-4 py-2">Actions</th>
+            <th>Intern</th>
+            <th>This Month's Total Shifts</th>
+            <th>This Month's Weekend Shifts</th>
+            <th>Last Month's Total Shifts</th>
+            <th>Last Month's Weekend Shifts</th>
           </tr>
         </thead>
         <tbody>
-          {(stats || []).filter(intern => intern.userId).map(intern => (
+          {(stats || []).map((intern) => (
             <tr key={intern.internId}>
-              <td className="border px-4 py-2">{intern.internName}</td>
-              <td className="border px-4 py-2">{intern.totalShifts}</td>
-              <td className="border px-4 py-2">{intern.weekendShifts}</td>
-              <td className="border px-4 py-2">
-                <button
-                  onClick={() => handlePromote(intern)}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-                >
-                  Promote
-                </button>
-              </td>
+              <td>{intern.internName}</td>
+              <td>{intern.thisMonthShifts}</td>
+              <td>{intern.thisMonthWeekendShifts}</td>
+              <td>{intern.lastMonthShifts}</td>
+              <td>{intern.lastMonthWeekendShifts}</td>
             </tr>
           ))}
         </tbody>

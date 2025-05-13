@@ -30,6 +30,7 @@ function Menu({ setMenuExpanded }: MenuProps) {
       onMouseLeave={handleMouseLeave}
     >
       <div className="menu-content">
+        <img src="src\logo.png" alt="logo" className="logo" />
         <nav>
           <ul>
             <li><Link to="/profile"><button>Profile Page</button></Link></li>

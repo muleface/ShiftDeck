@@ -6,6 +6,7 @@ import { AppContext } from "./AppContext";
 import stationRoleService from './API_Services/stationRoleService.tsx';
 import stationService from './API_Services/stationService.tsx';
 import { StationRole } from './API_Services/Models.tsx';
+import { promoteToManager } from './API_Services/authService.tsx'; // assumes this file includes the function
 
 
 function UserInfo() {
@@ -41,6 +42,21 @@ function UserInfo() {
         .catch(err => console.error('Error roles:', err));
     }
   }, [searchedUser]);
+
+
+  const handlePromote = async (intern: Intern) => {
+    
+      const confirm = window.confirm(`Are you sure you want to promote ${intern.firstName} ${intern.lastName} to manager?`);
+      if (!confirm) return;
+    
+      try {
+        await promoteToManager(intern.id);
+        alert(`${intern.firstName} ${intern.lastName} has been promoted to manager.`);
+      } catch (error) {
+        console.error("Failed to promote:", error);
+        alert("Failed to promote intern.");
+      }
+    };
 
   if(searchedUser===0)
   {
@@ -104,6 +120,17 @@ function UserInfo() {
           })}
         </tbody>
       </table>
+      <button
+          onClick={() => {
+            if (intern) {
+              handlePromote(intern);
+            } else {
+              console.error("No intern data available.");
+            }
+          }}
+        >
+          PROMOTE TO MANAGER
+      </button>
     </div>
     
   ); 
