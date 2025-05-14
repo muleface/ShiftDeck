@@ -17,5 +17,12 @@ public class Shift {
     [Column("station_num")]
     public int StationNum {get; set;} //can probably change this to a short with a small department reference table to save space, if needed due to free hosting plan constraints for the database.
 
+    public Shift(int internId, DateTime date, int station)
+    {
+        this.InternId = internId;
+        this.ShiftDate = date;
+        this.StationNum = station;
+    }
+
 }
 

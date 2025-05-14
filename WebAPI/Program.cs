@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +64,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<ApplicationContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))); // applies the application context class as context to the server.
+
+builder.Services.AddScoped<GreedyAssignment>(); //adds the algorithm class
 
 builder.Services.AddRouting(options => { //sets all URL queries to be case-insensitive, to avoid confusion / issues with search by name
     options.LowercaseUrls = true;
